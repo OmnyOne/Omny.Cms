@@ -53,6 +53,9 @@ jobs:
         run: dotnet pack Omny.Cms.Abstractions/Omny.Cms.Abstractions.csproj -c Release -p:Version=${{ steps.extract_version.outputs.version }}
       - name: Pack Omny.Cms.Builder tool
         run: dotnet pack Omny.Cms.Builder/Omny.Cms.Builder.csproj -c Release -p:Version=${{ steps.extract_version.outputs.version }}
+      - name: Fetch production appsettings
+        run: |
+          aws s3 cp s3://omny/cms-files/appsettings.Production.json Omny.Cms.Api/appsettings.Production.json --region us-east-1
       - name: Deploy Lambda function
         working-directory: Omny.Cms.Api
         run: |
