@@ -1,0 +1,32 @@
+@namespace Omny.Cms.UiEditor.Components
+@inherits MenuItemEditorBase
+@using MudBlazor
+
+@if (loading)
+{
+    <div>Loading ...</div>
+} else {
+@if (HasConfig)
+    {
+        <MudCheckBox T="bool" Checked="_external" CheckedChanged="OnExternalChanged" Label="External link?"/>
+    }
+
+    @if (!_external && HasConfig)
+    {
+        <MudSelect T="string" Label="Select item" Value="_target" ValueChanged="OnTargetChanged">
+            @if (_options != null)
+            {
+                @foreach (var item in _options)
+                {
+                    <MudSelectItem T="string" Value="@item.Value">@item.Display</MudSelectItem>
+                }
+            }
+        </MudSelect>
+    }
+
+    @if (_external || !HasConfig)
+    {
+        <MudTextField T="string" Value="_name" ValueChanged="OnNameChanged" Label="Name"/>
+        <MudTextField T="string" Value="_link" ValueChanged="OnLinkChanged" Label="Link"/>
+    }
+}

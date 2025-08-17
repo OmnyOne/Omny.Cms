@@ -1,0 +1,11 @@
+<Solution>
+  <Project Path="Omny.Aspire.AppHost\Omny.Aspire.AppHost.csproj" Type="Classic C#" />
+  <Project Path="Omny.Cms.Abstractions/Omny.Cms.Abstractions.csproj" />
+  <Project Path="Omny.Cms.Api\Omny.Cms.Api.csproj" />
+  <Project Path="Omny.Cms.Builder.Tests/Omny.Cms.Builder.Tests.csproj" />
+  <Project Path="Omny.Cms.Builder/Omny.Cms.Builder.csproj" />
+  <Project Path="Omny.Cms.Core/Omny.Cms.Core.csproj" />
+  <Project Path="Omny.Cms.Plugins/Omny.Cms.Plugins.csproj" />
+  <Project Path="Omny.Cms.Ui.Tests/Omny.Cms.Ui.Tests.csproj" />
+  <Project Path="Omny.Cms.Ui/Omny.Cms.Ui.csproj" />
+</Solution>

@@ -1,0 +1,26 @@
+{
+  "ContentType": "Menu",
+  "Name": "Main Menu",
+  "FieldValues": {
+    "Items": [
+      {
+        "type": "MenuItem",
+        "value": {
+          "External": false,
+          "Name": null,
+          "Link": null,
+          "Target": "index"
+        }
+      },
+      {
+        "type": "MenuItem",
+        "value": {
+          "External": false,
+          "Name": null,
+          "Link": null,
+          "Target": "about"
+        }
+      }
+    ]
+  }
+}

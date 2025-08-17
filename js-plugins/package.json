@@ -1,0 +1,13 @@
+{
+  "name": "js-plugins",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "esbuild fieldPlugins.js --bundle --format=iife --outfile=../Omny.Cms.Ui/wwwroot/js-plugins/fieldPlugins.js",
+    "watch": "esbuild fieldPlugins.js --bundle --format=iife --outfile=../Omny.Cms.Ui/wwwroot/js-plugins/fieldPlugins.js --watch"
+  },
+  "dependencies": {
+    "@toast-ui/editor": "^3.2.2",
+    "esbuild": "^0.25.8"
+  }
+}

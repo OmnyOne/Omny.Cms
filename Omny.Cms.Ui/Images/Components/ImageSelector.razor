@@ -1,0 +1,50 @@
+@namespace Omny.Cms.UiImages.Components
+@inherits ImageSelectorBase
+@using MudBlazor
+
+<MudDialog>
+    <DialogContent>
+        @if (_images == null || Uploading)
+        {
+            <MudProgressCircular Indeterminate="true" />
+        }
+        else
+        {
+            <div class="image-grid">
+                @foreach (var img in _images)
+                {
+                    @if (ShouldSelectImage)
+                    {
+                        <div class="image-option @(img == _selected ? "selected" : string.Empty)" @onclick="(() => _selected = img)">
+                            <ImagePreview FileName="@img" />
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="image-option">
+                            <ImagePreview FileName="@img" />
+                        </div>
+                    }
+                }
+            </div>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudFileUpload T="IBrowserFile" Accept=".png, .jpg" FilesChanged="UploadFile">
+            <ActivatorContent>
+                <MudFab Color="Color.Secondary"
+                        StartIcon="@Icons.Material.Filled.Image"
+                        Label="Load picture" />
+            </ActivatorContent>
+        </MudFileUpload>
+        @if (ShouldSelectImage)
+        {
+            <MudButton @onclick="Confirm" Disabled="@string.IsNullOrEmpty(_selected)" Color="Color.Primary">Select</MudButton>
+            <MudButton @onclick="Cancel">Cancel</MudButton>
+        }
+        else
+        {
+            <MudButton @onclick="Cancel" Color="Color.Primary">Close</MudButton>
+        }
+    </DialogActions>
+</MudDialog>

@@ -1,0 +1,78 @@
+@namespace Omny.Cms.UiRepositories.Components
+@inherits RepositorySelectorBase
+@using Omny.Cms.UiRepositories.Models
+@using Omny.Cms.UiRepositories.Services
+
+<div class="repository-selector">
+    @if (!string.IsNullOrEmpty(BuildWatcher.Status))
+    {
+        if (BuildWatcher.CurrentBuildUrl != null)
+        {
+            <a class="update-link" href="@BuildWatcher.CurrentBuildUrl" target="_blank">@BuildWatcher.Status</a>
+        }
+        else
+        {
+            <button class="update-link" disabled>@BuildWatcher.Status</button>
+        }
+    }
+    else if (currentRepository?.HasWorkflowDispatch == true)
+    {
+        <button class="update-link" @onclick="TriggerUpdate">Update Site</button>
+    }
+    <label for="repository-dropdown">Site:</label>
+    <select id="repository-dropdown" @onchange="OnRepositoryChanged" value="@GetCurrentRepositoryId()">
+        @if (repositories != null)
+        {
+            @foreach (var repo in repositories)
+            {
+                <option value="@GetRepositoryId(repo)">@repo.Name</option>
+            }
+        }
+    </select>
+    @if (currentRepository?.PreviewUrl != null)
+    {
+        <a class="preview-link" href="@currentRepository.PreviewUrl" target="_blank">See Preview</a>
+    }
+</div>
+
+<style>
+    .repository-selector {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .repository-selector label {
+        font-weight: 500;
+        color: #333;
+    }
+
+    .repository-selector select {
+        padding: 4px 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        background-color: white;
+        color: #333;
+        min-width: 200px;
+    }
+
+    .repository-selector select:focus {
+        outline: none;
+        border-color: #007bff;
+        box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+    }
+
+    .repository-selector .update-link,
+    .repository-selector .preview-link {
+        padding: 4px 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        text-decoration: none;
+        color: #333;
+    }
+
+    .repository-selector .update-link:hover,
+    .repository-selector .preview-link:hover {
+        text-decoration: underline;
+    }
+</style>

@@ -1,0 +1,148 @@
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Forms
+@inject IEditorService EditorService
+@using Cropper.Blazor.Components
+@using Cropper.Blazor.Models
+@using Cropper.Blazor.Events
+@using CropReady = Cropper.Blazor.Events.CropReadyEvent.CropReadyEvent
+@using CropEnd = Cropper.Blazor.Events.CropEndEvent.CropEndEvent
+
+<MudDialog>
+    <DialogContent>
+        @if (_dataUrl == null)
+        {
+            <MudProgressCircular Indeterminate="true" />
+        }
+        else
+        {
+            <div style="height:60vh;">
+                <CropperComponent @ref="_cropper" Options=" new Options { AutoCropArea = 1, ViewMode = ViewMode.Vm2 }" Src="@_dataUrl" OnReadyEvent="OnReady" OnCropEndEvent="OnEnded" Style="max-height:100%;" />
+            </div>
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mt-2">
+                <MudNumericField Value="@_width" ValueChanged="@(EventCallback.Factory.Create<int>(this, OnWidthChanged))" Label="Width" Immediate="true" Variant="Variant.Outlined" Style="width:100px" />
+                <MudNumericField Value="@_height" ValueChanged="@(EventCallback.Factory.Create<int>(this, OnHeightChanged))" Label="Height" Immediate="true" Variant="Variant.Outlined" Style="width:100px" />
+                <MudCheckBox T="bool" Checked @bind-Value="_preserveAspect" Class="ml-4">Preserve aspect</MudCheckBox>
+                <MudText Class="ml-4">Size: @_sizeKb KB</MudText>
+            </MudStack>
+            @if (_sizeKb > _maxSizeKb)
+            {
+                <MudText Color="Color.Error">Image exceeds max @_maxSizeKb KB</MudText>
+            }
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Save" Disabled="@(_sizeKb > _maxSizeKb)" Color="Color.Primary">Save</MudButton>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public IBrowserFile? File { get; set; }
+
+    private CropperComponent? _cropper;
+    private string? _dataUrl;
+    private int _width;
+    private int _height;
+    private double _aspect;
+    private bool _preserveAspect = true;
+    private int _sizeKb;
+    private int _maxSizeKb;
+    
+
+    protected override async Task OnInitializedAsync()
+    {
+        _preserveAspect = true;
+        _maxSizeKb = await EditorService.GetMaxImageSizeKbAsync();
+        if (File != null)
+        {
+            using var ms = new MemoryStream();
+            await File.OpenReadStream(maxAllowedSize: File.Size).CopyToAsync(ms);
+            var bytes = ms.ToArray();
+            _dataUrl = $"data:{File.ContentType};base64,{Convert.ToBase64String(bytes)}";
+        }
+    }
+
+    private void OnReady(JSEventData<CropReady> _)
+    {
+        OnCropChangedCore();
+    }
+
+    private void OnEnded(JSEventData<CropEnd> _)
+    {
+        OnCropChangedCore();
+    }
+
+    private async Task OnCropChangedCore()
+    {
+        if (_cropper == null)
+            return;
+        var data = await _cropper.GetDataAsync(true);
+        _width = (int)data.Width;
+        _height = (int)data.Height;
+        if (_preserveAspect)
+        {
+            _aspect = _width / (double)_height;
+        }
+        
+        // update size eventually
+        await UpdateSize();
+        
+        StateHasChanged();
+    }
+
+    private async Task OnWidthChanged(int value)
+    {
+        _width = value;
+        if (_preserveAspect)
+        {
+            _height = (int)Math.Round(_width / _aspect);
+        }
+        await UpdateSize();
+    }
+
+    private async Task OnHeightChanged(int value)
+    {
+        _height = value;
+        if (_preserveAspect)
+        {
+            _width = (int)Math.Round(_height * _aspect);
+        }
+        await UpdateSize();
+    }
+
+    private async Task UpdateSize()
+    {
+        if (_cropper == null)
+            return;
+        var opts = new GetCroppedCanvasOptions { Width = _width, Height = _height, ImageSmoothingEnabled = true, ImageSmoothingQuality = "high"};
+        var imageReceiver = await _cropper.GetCroppedCanvasDataInBackgroundAsync(opts, UiConstants.ImageMimeType, 1f);
+        var byteEnumerable = imageReceiver.GetImageStreamAsync();
+        int byteCount = 0;
+        await foreach (var bytes in byteEnumerable)
+        {
+           byteCount += bytes.Length;
+        }
+        _sizeKb = byteCount / 1024;
+        StateHasChanged();
+        //var base64 = url[(url.IndexOf(',') + 1)..];
+        //_sizeKb = Convert.FromBase64String(base64).Length / 1024;
+    }
+
+    private async Task Save()
+    {
+        if (_cropper == null)
+            return;
+        var opts = new GetCroppedCanvasOptions { Width = _width, Height = _height, ImageSmoothingEnabled = true, ImageSmoothingQuality = "high" };
+        var imageReceiver = await _cropper.GetCroppedCanvasDataInBackgroundAsync(opts, UiConstants.ImageMimeType, 1f);
+        var byteEnumerable = imageReceiver.GetImageStreamAsync();
+        List<byte> bytesList = new List<byte>();
+        await foreach (var bytes in byteEnumerable)
+        {
+            bytesList = bytesList.Concat(bytes).ToList();
+        }
+        MudDialog.Close(DialogResult.Ok(bytesList));
+    }
+
+    void Cancel() => MudDialog.Cancel();
+}

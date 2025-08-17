@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <RootNamespace>Omny.Api</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Amazon.Lambda.AspNetCoreServer.Hosting" Version="1.8.2" />
+        <PackageReference Include="Auth0.AspNetCore.Authentication" Version="1.4.1" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.12" />
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.4"/>
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0"/>
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(Configuration)' == 'Debug'">
+      <ProjectReference Include="..\Omny.Cms.Ui\Omny.Cms.Ui.csproj" />
+    </ItemGroup>
+
+</Project>

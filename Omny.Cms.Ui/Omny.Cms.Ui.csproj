@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <RootNamespace>Omny.Cms.Ui</RootNamespace>
+    </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Blazored.LocalStorage" Version="4.5.0" />
+    <PackageReference Include="Blazored.TextEditor" Version="1.1.3" />
+    <PackageReference Include="Cropper.Blazor" Version="1.4.2" />
+    <PackageReference Include="TinyMCE.Blazor" Version="2.1.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.4" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="8.0.12" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.4" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.1" />
+        <PackageReference Include="Octokit" Version="14.0.0" />
+    <PackageReference Include="MudBlazor" Version="8.8.0" />
+    <PackageReference Include="AWSSDK.S3" Version="3.7.101.6" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../Omny.Cms.Abstractions/Omny.Cms.Abstractions.csproj" />
+    <ProjectReference Include="..\Omny.Cms.Core\Omny.Cms.Core.csproj" />
+    <ProjectReference Include="..\Omny.Cms.Plugins\Omny.Cms.Plugins.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <TypeScriptCompile Include="wwwroot\tinymce\tinymce.d.ts" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="Features\Images\Components\ImageCropperDialog.razor" />
+    <_ContentIncludedByDefault Remove="Features\Images\Components\ImagePreview.razor" />
+    <_ContentIncludedByDefault Remove="Features\Images\Components\ImageSelector.razor" />
+    <_ContentIncludedByDefault Remove="Features\Images\Pages\Images.razor" />
+    <_ContentIncludedByDefault Remove="Images\Pages\Images.razor" />
+  </ItemGroup>
+
+</Project>

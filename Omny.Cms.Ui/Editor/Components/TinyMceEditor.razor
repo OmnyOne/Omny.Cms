@@ -1,0 +1,13 @@
+@namespace Omny.Cms.UiEditor.Components
+@inherits TinyMceEditorBase
+@using TinyMCE.Blazor
+
+<TinyMCE.Blazor.Editor Value="@_value" ValueChanged="OnValueChanged" LicenseKey="gpl" ScriptSrc="/tinymce/tinymce.min.js" Conf="EditorConfig" />
+
+@code {
+    private static readonly Dictionary<string, object> EditorConfig = new()
+    {
+        ["menubar"] = false,
+        ["promotion"] = false
+    };
+}

@@ -1,0 +1,47 @@
+name: .NET
+
+on:
+  push:
+    branches: [ main ]
+    tags:
+      - 'v*'
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup .NET LTS
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Setup .NET recent SDK
+        uses: actions/setup-dotnet@v4
+      - name: Restore dependencies
+        run: dotnet restore
+      - name: Build
+        run: dotnet build --no-restore
+      - name: Test
+        run: dotnet test --no-build --verbosity normal
+
+  publish:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+      - name: Extract version from tag
+        id: extract_version
+        run: echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+      - name: Pack Omny.Cms.Abstractions
+        run: dotnet pack Omny.Cms.Abstractions/Omny.Cms.Abstractions.csproj -c Release -p:Version=${{ steps.extract_version.outputs.version }}
+      - name: Pack Omny.Cms.Builder tool
+        run: dotnet pack Omny.Cms.Builder/Omny.Cms.Builder.csproj -c Release -p:Version=${{ steps.extract_version.outputs.version }}
+      - name: Publish to NuGet
+        run: dotnet nuget push **/bin/Release/*.nupkg -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json

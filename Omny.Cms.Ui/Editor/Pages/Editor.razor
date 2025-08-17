@@ -1,0 +1,161 @@
+@page "/"
+@namespace Omny.Cms.UiEditor.Pages
+@inherits EditorBase
+@attribute [Authorize]
+
+@using System.Collections.Immutable
+@using Omny.Cms.UiRepositories.Models
+@using Omny.Cms.UiRepositories.Files
+@using Omny.Cms.Editor
+@using System.IO
+@using System.Text.Json
+@using Microsoft.AspNetCore.Authorization
+
+@if (_isSaving)
+{
+    <div class="saving-overlay">
+        <MudProgressCircular Indeterminate Size="Size.Large" />
+    </div>
+}
+
+<div class="editor-container">
+    <div class="editor-sidebar @( _fullScreen ? "hidden" : null )">
+        @if (_currentRepo?.UseLeftItemSelector == true)
+        {
+            <MudList T="string">
+                <MudListSubheader>
+                    Content Types
+                </MudListSubheader>
+            @foreach (var type in _contentTypesList)
+            {
+                <MudListItem Text="@type.Name" Expanded>
+                    <NestedList>
+                        @if (_contentTypesMap.TryGetValue(type.Name, out var items))
+                        {
+                            @foreach (var item in items)
+                            {
+                                <MudListItem>
+                                    @item.Name
+                                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="() => SelectContentItem(type.Name, item)" />
+                                    <MudIconButton Icon="@Icons.Material.Filled.DriveFileRenameOutline" Size="Size.Small" OnClick="() => RenameItemAsync(type.Name, item)" />
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="() => DeleteItemAsync(type.Name, item)" />
+                                </MudListItem>
+                            }
+                        }
+                        else
+                        {
+                            <MudListItem Text="Loading..." Disabled="true" />
+                        }
+                    </NestedList>
+                </MudListItem>
+            }
+            </MudList>
+        }
+        else
+        {
+            <MudList T="string">
+                <MudListSubheader>
+                    Content Types
+                </MudListSubheader>
+            @foreach (var type in _contentTypesList)
+            {
+                <MudListItem OnClick="() => SelectContentType(type.Name)">
+                    <MudIcon Icon="@(type.Icon ?? Icons.Material.Filled.Article)" Class="me-2" />
+                    @type.Name
+                </MudListItem>
+            }
+            </MudList>
+        }
+        <MudButton OnClick="OpenImageSelector" Color="Color.Primary" Variant="Variant.Filled">
+            Load Image
+        </MudButton>
+        
+    </div>
+    <div class="editor-main">
+        @if (_selectedContentItem != null && !_changingContent && _currentFieldContents.Count > 0)
+        {
+            <div class="editor-header">
+                <MudButton OnClick="CloseItem" StartIcon="@Icons.Material.Filled.Close">Close</MudButton>
+                <MudButton OnClick="SaveContentAsync" Disabled="@(!_changesMade)" Color="Color.Primary">Save</MudButton>
+                <MudIconButton Class="fullscreen-toggle" Icon="@(_fullScreen ? Icons.Material.Filled.FullscreenExit : Icons.Material.Filled.Fullscreen)" OnClick="ToggleFullScreen" />
+            </div>
+
+            <div class="editor-content">
+                @foreach (var field in _currentFieldDefs)
+                {
+                    @if (_isAdvancedMode || !field.IsAdvanced)
+                    {
+                        <div class="field-editor">
+                            <h4>@(field.Label ?? field.Name)</h4>
+                            @if (_fieldKinds.TryGetValue(field.Name, out var kind))
+                            {
+                                if (kind == "compound")
+                                {
+                                    <CompoundFieldEditor FieldType="@field.FieldType"
+                                                         Value="@(_currentFieldContents[field.Name] as string)"
+                                                         ValueChanged="val => OnFieldChanged(field.Name, val)"/>
+                                }
+                                else if (kind == "collection")
+                                {
+                                    <CollectionFieldEditor FieldType="@field.FieldType"
+                                                           Value="@(_currentFieldContents[field.Name] as CollectionFieldContent)"
+                                                           ValueChanged="val => OnFieldChanged(field.Name, val)"/>
+                                }
+                                else if (_currentFieldFieldPlugins.TryGetValue(field.Name, out var fieldPlugin))
+                                {
+                                    @fieldPlugin.RenderEditor(_currentFieldContents[field.Name], EventCallback.Factory.Create<object?>(this, val => OnFieldChanged(field.Name, val)))
+                                }
+                                else if (_currentFieldEditors.TryGetValue(field.Name, out var plugin))
+                                {
+                                    @plugin.RenderEditor(_currentFieldContents[field.Name], EventCallback.Factory.Create<object?>(this, val => OnFieldChanged(field.Name, val)))
+                                }
+                            }
+                        </div>
+                    }
+                }
+            </div>
+        }
+        else if (_selectedContentItem != null)
+        {
+            <p>Loading content...</p>
+        } else if (_changingContent || string.IsNullOrEmpty(_selectedContentType))
+        {
+            <p>Loading ...</p>
+        }
+        else
+        {
+            if (_currentRepo?.UseLeftItemSelector == true)
+            {
+                <p>Select a content item to edit</p>
+            }
+            else
+            {
+                <div class="item-selector">
+                    <MudTextField @bind-Value="_searchTerm" Placeholder="Search..." Immediate="true" />
+                    <MudButton Disabled="@(_selectedContentType == null)" OnClick="() => AddNewItemAsync(_selectedContentType!)" Color="Color.Primary">Add</MudButton>
+                    <MudList T="string">
+                        @foreach (var item in GetFilteredItems())
+                        {
+                            <MudListItem>
+                                <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                                    <div>
+                                        <MudIcon Icon="@(_contentTypesList.FirstOrDefault(t => t.Name == _selectedContentType)?.Icon ?? Icons.Material.Filled.Article)" Class="me-2" />
+                                        @item.Name
+                                    </div>
+                                    <div>
+                                        <MudButton StartIcon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="() => SelectContentItem(_selectedContentType!, item)">Edit</MudButton>
+                                        <MudButton StartIcon="@Icons.Material.Filled.DriveFileRenameOutline" Size="Size.Small" OnClick="() => RenameItemAsync(_selectedContentType!, item)">Rename</MudButton>
+                                        <MudButton StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="() => DeleteItemAsync(_selectedContentType!, item)">Delete</MudButton>
+                                    </div>
+                                </div>
+                            </MudListItem>
+                        }
+                    </MudList>
+                </div>
+            }
+        }
+    </div>
+
+</div>
+
+

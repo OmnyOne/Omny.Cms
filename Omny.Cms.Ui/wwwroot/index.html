@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Omny.Cms</title>
+    <base href="/" />
+    <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" href="css/app.css" />
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <link href="Omny.Cms.Ui.styles.css" rel="stylesheet" />
+    <link href="_content/MudBlazor/MudBlazor.min.css" rel="stylesheet" />
+    <link href="_content/Cropper.Blazor/cropper.min.css" rel="stylesheet" />
+    <link href="js-plugins/fieldPlugins.css" rel="stylesheet" />
+
+    <!-- Material CSS -->
+    <link href="css/material.min.css" rel="stylesheet">
+
+    <link href="css/editor.css" rel="stylesheet">
+
+    <!-- Add Material font (Roboto) and Material icon as needed -->
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,500,500i,700,700i|Roboto+Mono:300,400,700|Roboto+Slab:300,400,700" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <link href="_content/Blazorise/blazorise.css?v=1.7.3.0" rel="stylesheet" />
+    <link href="_content/Blazorise.Material/blazorise.material.css?v=1.7.3.0" rel="stylesheet" />
+    <link href="_content/Blazorise.Icons.Material/blazorise.icons.material.css?v=1.7.3.0" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.bubble.css" rel="stylesheet">
+
+    <!-- Optional JavaScript -->
+    <!-- These are the standard js dependencies this provider typically dependes upon, but Blazorise deems these as optional as Blazorise Components should work correctly without these  -->
+    <!-- jQuery first, then Popper.js, then Material JS -->
+    <script src="https://code.jquery.com/jquery-3.5.0.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+
+    <!-- Mandatory JavaScript -->
+    <script src="js/material.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
+    <script src="_content/Blazored.TextEditor/quill-blot-formatter.min.js"></script>
+    <script src="_content/Blazored.TextEditor/Blazored-BlazorQuill.js"></script>
+    <script type="module" src="_content/TinyMCE.Blazor/TinyMce.Blazor.lib.module.js"></script>
+    <script src="_content/Microsoft.AspNetCore.Components.WebAssembly.Authentication/AuthenticationService.js"></script>
+</head>
+
+<body>
+    <div id="app">
+        <svg class="loading-progress">
+            <circle r="40%" cx="50%" cy="50%" />
+            <circle r="40%" cx="50%" cy="50%" />
+        </svg>
+        <div class="loading-progress-text"></div>
+    </div>
+
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">🗙</a>
+    </div>
+    <script src="_content/MudBlazor/MudBlazor.min.js"></script>
+    <script src="_content/Cropper.Blazor/cropper.min.js"></script>
+    <script src="_content/Cropper.Blazor/cropperJsInterop.min.js"></script>
+    <script src="js-plugins/fieldPlugins.js"></script>
+    <script src="_framework/blazor.webassembly.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,33 @@
+@namespace Omny.Cms.UiLayout
+@inherits MainLayoutBase
+@using Omny.Cms.UiRepositories.Components
+<div class="page">
+    <!--<div class="sidebar">
+        <NavMenu/>
+    </div>-->
+
+    @if(Loaded) {
+    <main>
+        <div class="top-row px-4">
+            <div class="top-row-content">
+                <RepositorySelector />
+                <button @onclick="Logout">Logout</button>
+            </div>
+        </div>
+
+        <article class="content px-4">
+            @* Required *@
+            <MudThemeProvider />
+            <MudPopoverProvider />
+
+            @* Needed for dialogs *@
+            <MudDialogProvider />
+
+            @* Needed for snackbars *@
+            <MudSnackbarProvider />
+            @Body
+        </article>
+    </main>
+    }
+</div>
+

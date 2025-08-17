@@ -1,0 +1,9 @@
+appsettings.*.json
+obj/
+bin/
+.vscode/
+.vs/
+.idea/
+*.user
+node_modules/
+Omny.Cms.Ui/wwwroot/js-plugins/

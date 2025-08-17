@@ -1,0 +1,21 @@
+@namespace Omny.Cms.UiEditor.Components
+@inherits CompoundFieldEditorBase
+@using Omny.Cms.Editor
+
+<div class="compound-field">
+    @if (_subFields is not null)
+    {
+        @foreach (var sub in _subFields)
+        {
+            <div class="compound-subfield">
+                @if (!string.IsNullOrEmpty(sub.Label))
+                {
+                    <label>@sub.Label</label>
+                }
+                @RenderSubField(sub.FieldType)
+            </div>
+        }
+    }
+</div>
+
+

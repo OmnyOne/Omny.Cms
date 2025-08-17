@@ -1,0 +1,137 @@
+.editor-container {
+    display: flex;
+    flex-direction: row;
+    height: 100vh;
+}
+
+.editor-sidebar {
+    width: 200px;
+    min-width: 160px;
+    max-width: 260px;
+    background: #f7f7f7;
+    border-right: 1px solid #e0e0e0;
+    padding: 0.5rem;
+    overflow-y: auto;
+}
+
+.editor-main {
+    flex: 1 1 0%;
+    padding: 1rem;
+    overflow-y: auto;
+    background: #fff;
+}
+
+.editor-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.editor-header h3 {
+    margin: 0 0 0.5rem 0;
+    color: #333;
+}
+
+.editor-header p {
+    margin: 0.25rem 0;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.editor-header button {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 0.5rem;
+}
+
+.editor-header button:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+.editor-content {
+    flex: 1;
+}
+
+.editor-sidebar button {
+    background: none;
+    border: none;
+    padding: 0.25rem 0;
+    font-size: 1rem;
+    cursor: pointer;
+    text-align: left;
+    width: 100%;
+}
+
+.editor-sidebar ul {
+    list-style: none;
+    padding-left: 1rem;
+}
+
+.editor-sidebar li {
+    margin-bottom: 0.25rem;
+}
+
+.item-selector {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.item-selector .mud-list-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.editor-textarea {
+    width: 100%;
+    min-height: 400px;
+    padding: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 14px;
+    line-height: 1.5;
+    resize: vertical;
+    outline: none;
+}
+
+.editor-textarea:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.markdown-editor {
+    font-family: 'Source Code Pro', 'Consolas', 'Monaco', 'Courier New', monospace;
+}
+
+.html-editor {
+    font-family: 'Source Code Pro', 'Consolas', 'Monaco', 'Courier New', monospace;
+}
+
+.text-editor {
+    font-family: 'Source Code Pro', 'Consolas', 'Monaco', 'Courier New', monospace;
+}
+
+.hidden { display: none !important; }
+.fullscreen-toggle { margin-left: auto; }
+
+.saving-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}

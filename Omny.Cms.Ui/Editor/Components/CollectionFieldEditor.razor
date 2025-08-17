@@ -1,0 +1,34 @@
+@namespace Omny.Cms.UiEditor.Components
+@inherits CollectionFieldEditorBase
+@using Omny.Cms.Editor
+
+<div class="collection-field">
+    @if (_items is not null)
+    {
+        @for (int i = 0; i < _items.Count; i++)
+        {
+            var item = _items[i];
+            <div class="collection-item">
+                <div class="collection-editor">
+                    @RenderItemEditor(i)
+                </div>
+
+                @{
+                    var index = i;
+                }
+                <button type="button" @onclick="(() => Remove(index))">Remove</button>
+            </div>
+        }
+        <div class="add-buttons">
+            @foreach (var t in _allowed)
+            {
+                var plugin = PluginRegistry.GetFieldPlugin(t);
+                <button type="button" class="add-field" @onclick="(() => Add(t))">
+                    <span class="icon">@plugin.Icon</span> Add @plugin.DisplayName
+                </button>
+            }
+        </div>
+    }
+</div>
+
+
