@@ -36,6 +36,16 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 9.0.x
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+      - name: Install Amazon.Lambda.Tools
+        run: |
+          dotnet tool install -g Amazon.Lambda.Tools || dotnet tool update -g Amazon.Lambda.Tools
+          echo "PATH=$HOME/.dotnet/tools:$PATH" >> $GITHUB_ENV
       - name: Extract version from tag
         id: extract_version
         run: echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
@@ -43,5 +53,14 @@ jobs:
         run: dotnet pack Omny.Cms.Abstractions/Omny.Cms.Abstractions.csproj -c Release -p:Version=${{ steps.extract_version.outputs.version }}
       - name: Pack Omny.Cms.Builder tool
         run: dotnet pack Omny.Cms.Builder/Omny.Cms.Builder.csproj -c Release -p:Version=${{ steps.extract_version.outputs.version }}
+      - name: Deploy Lambda function
+        working-directory: Omny.Cms.Api
+        run: |
+          export PATH="$HOME/.dotnet/tools:$PATH"
+          dotnet lambda deploy-function -farch x86_64 -frun dotnet8 -fn omny-sites-web
+      - name: Publish UI and sync to S3
+        run: |
+          dotnet publish Omny.Cms.Ui -c Release -o ./Omny.Cms.Ui/publish
+          aws s3 sync ./Omny.Cms.Ui/publish/wwwroot/ s3://sites.omny.ca/ --delete
       - name: Publish to NuGet
         run: dotnet nuget push **/bin/Release/*.nupkg -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json
