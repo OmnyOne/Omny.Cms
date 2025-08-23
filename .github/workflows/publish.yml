@@ -1,37 +1,21 @@
-name: .NET
+name: Publish
 
 on:
   push:
-    branches: [ main ]
     tags:
       - 'v*'
-  pull_request:
-    branches: [ main ]
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup .NET LTS
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: 8.0.x
-      - name: Setup .NET recent SDK
-        uses: actions/setup-dotnet@v4
-      - name: Restore dependencies
-        run: dotnet restore
-      - name: Build
-        run: dotnet build --no-restore
-      - name: Test
-        run: dotnet test --no-build --verbosity normal
-
   publish:
-    needs: build
-    if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Ensure tag commit is on main
+        run: |
+          git fetch origin main
+          git merge-base --is-ancestor origin/main $GITHUB_SHA
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
@@ -63,10 +47,10 @@ jobs:
           dotnet lambda deploy-function -farch x86_64 -frun dotnet8 -fn omny-sites-web
       - name: Publish UI and sync to S3
         run: |
-          dotnet publish Omny.Cms.Ui -c Release -o ./Omny.Cms.Ui/publish
-          dotnet publish Omny.Cms.Ui -c Release -p:FreeVersion=true -o ./Omny.Cms.Ui/publish-free
+          dotnet publish Omny.Cms.Ui -c Release -o ./publish/ui
+          dotnet publish Omny.Cms.Ui -c Release -p:FreeVersion=true -o ./publish/ui-free
           aws s3 rm s3://sites.omny.ca --recursive
-          aws s3 sync ./Omny.Cms.Ui/publish/wwwroot/ s3://sites.omny.ca/
-          aws s3 sync ./Omny.Cms.Ui/publish-free/wwwroot/ s3://sites.omny.ca/free/
+          aws s3 sync ./publish/ui/wwwroot/ s3://sites.omny.ca/
+          aws s3 sync ./publish/ui-free/wwwroot/ s3://sites.omny.ca/free/
       - name: Publish to NuGet
         run: dotnet nuget push **/bin/Release/*.nupkg -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json
