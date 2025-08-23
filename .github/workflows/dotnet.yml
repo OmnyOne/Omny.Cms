@@ -64,7 +64,9 @@ jobs:
       - name: Publish UI and sync to S3
         run: |
           dotnet publish Omny.Cms.Ui -c Release -o ./Omny.Cms.Ui/publish
+          dotnet publish Omny.Cms.Ui -c Release -p:FreeVersion=true -o ./Omny.Cms.Ui/publish-free
           aws s3 rm s3://sites.omny.ca --recursive
           aws s3 sync ./Omny.Cms.Ui/publish/wwwroot/ s3://sites.omny.ca/
+          aws s3 sync ./Omny.Cms.Ui/publish-free/wwwroot/ s3://sites.omny.ca/free/
       - name: Publish to NuGet
         run: dotnet nuget push **/bin/Release/*.nupkg -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json

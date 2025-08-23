@@ -14,11 +14,27 @@ public class RepositorySelectorBase : ComponentBase, IDisposable
 
     protected List<RepositoryInfo>? repositories;
     protected RepositoryInfo? currentRepository;
+    protected string owner = string.Empty;
+    protected string repoName = string.Empty;
+    protected string branch = "main";
+    protected string token = string.Empty;
+
+    protected static bool IsFreeVersion =>
+#if FREE_VERSION
+        true;
+#else
+        false;
+#endif
 
     protected override async Task OnInitializedAsync()
     {
+#if FREE_VERSION
+        currentRepository = await RepositoryManager.GetCurrentRepositoryAsync();
+        repositories = currentRepository != null ? new List<RepositoryInfo> { currentRepository } : new List<RepositoryInfo>();
+#else
         repositories = await RepositoryManager.GetRepositoriesAsync();
         currentRepository = await RepositoryManager.GetCurrentRepositoryAsync();
+#endif
         RepositoryManager.CurrentRepositoryChanged += OnCurrentRepositoryChanged;
         BuildWatcher.StatusChanged += OnBuildStatusChanged;
         BuildWatcher.BuildCompleted += OnBuildCompleted;
@@ -58,6 +74,32 @@ public class RepositorySelectorBase : ComponentBase, IDisposable
     protected string GetCurrentRepositoryId()
     {
         return currentRepository != null ? GetRepositoryId(currentRepository) : "";
+    }
+
+    protected async Task SaveRepository()
+    {
+#if FREE_VERSION
+        if (string.IsNullOrWhiteSpace(owner) || string.IsNullOrWhiteSpace(repoName) || string.IsNullOrWhiteSpace(token))
+        {
+            return;
+        }
+
+        var repo = new RepositoryInfo
+        {
+            Owner = owner,
+            RepoName = repoName,
+            Branch = branch,
+            Token = token,
+            Name = repoName
+        };
+
+        await RepositoryManager.SetCurrentRepositoryAsync(repo);
+        repositories = new List<RepositoryInfo> { repo };
+        currentRepository = repo;
+        StateHasChanged();
+#else
+        await Task.CompletedTask;
+#endif
     }
 
     protected async Task TriggerUpdate()

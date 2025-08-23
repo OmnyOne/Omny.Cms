@@ -34,11 +34,11 @@ builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddMudServices();
 builder.Services.AddCropper();
 builder.Services.AddScoped<IRepositoryService, RepositoryService>();
+builder.Services.AddScoped<ApiFileService>();
 builder.Services.AddScoped<IRepositoryManagerService, RepositoryManagerService>();
 builder.Services.AddScoped<IAdvancedUserCheck, RepositoryManagerService>();
 builder.Services.AddScoped<IGitHubClientProvider, GitHubClientProvider>();
 builder.Services.AddScoped<GitHubFileService>();
-builder.Services.AddScoped<ApiFileService>();
 builder.Services.AddScoped<IRemoteFileService, RepositoryRemoteFileService>();
 builder.Services.AddScoped<IImageStorageService, S3ImageStorageService>();
 builder.Services.AddScoped<IContentTypePlugin,PagePlugin>();
@@ -70,13 +70,17 @@ builder.Services.AddScoped<Omny.Cms.Editor.Plugins.QuillHtmlEditorPlugin>();
 builder.Services.AddScoped<Omny.Cms.Editor.Plugins.TinyMceHtmlEditorPlugin>();
 builder.Services.AddScoped<Omny.Cms.Plugins.Fields.TextEditorPlugin>();
 builder.Services.AddSingleton<AuthRedirectHandler>();
-
+#if !FREE_VERSION
 builder.Services.AddSingleton<CsrfTokenProvider>();
 builder.Services.AddApiAuthorization();
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddHttpClient("ApiClient",
         client => client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress + apiRoot))
     .AddHttpMessageHandler<AuthRedirectHandler>();
+#else
+builder.Services.AddHttpClient("ApiClient",
+        client => client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress + apiRoot));
+#endif
 builder.Services.AddTransient(sp =>
     sp.GetRequiredService<IHttpClientFactory>().CreateClient("ApiClient"));
 

@@ -4,7 +4,43 @@
 @using Omny.Cms.UiRepositories.Services
 
 <div class="repository-selector">
-    @if (!string.IsNullOrEmpty(BuildWatcher.Status))
+@if (IsFreeVersion)
+{
+    if (currentRepository == null)
+    {
+        <input @bind="owner" placeholder="Owner" />
+        <input @bind="repoName" placeholder="Repository" />
+        <input @bind="branch" placeholder="Branch" />
+        <input @bind="token" type="password" placeholder="Token" />
+        <button @onclick="SaveRepository">Save</button>
+    }
+    else
+    {
+        if (!string.IsNullOrEmpty(BuildWatcher.Status))
+        {
+            if (BuildWatcher.CurrentBuildUrl != null)
+            {
+                <a class="update-link" href="@BuildWatcher.CurrentBuildUrl" target="_blank">@BuildWatcher.Status</a>
+            }
+            else
+            {
+                <button class="update-link" disabled>@BuildWatcher.Status</button>
+            }
+        }
+        else if (currentRepository?.HasWorkflowDispatch == true)
+        {
+            <button class="update-link" @onclick="TriggerUpdate">Update Site</button>
+        }
+        <span>@currentRepository.Name</span>
+        @if (currentRepository?.PreviewUrl != null)
+        {
+            <a class="preview-link" href="@currentRepository.PreviewUrl" target="_blank">See Preview</a>
+        }
+    }
+}
+else
+{
+    if (!string.IsNullOrEmpty(BuildWatcher.Status))
     {
         if (BuildWatcher.CurrentBuildUrl != null)
         {
@@ -23,7 +59,7 @@
     <select id="repository-dropdown" @onchange="OnRepositoryChanged" value="@GetCurrentRepositoryId()">
         @if (repositories != null)
         {
-            @foreach (var repo in repositories)
+            foreach (var repo in repositories)
             {
                 <option value="@GetRepositoryId(repo)">@repo.Name</option>
             }
@@ -33,6 +69,7 @@
     {
         <a class="preview-link" href="@currentRepository.PreviewUrl" target="_blank">See Preview</a>
     }
+}
 </div>
 
 <style>

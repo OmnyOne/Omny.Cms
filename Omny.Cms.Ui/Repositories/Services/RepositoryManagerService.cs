@@ -5,6 +5,57 @@ namespace Omny.Cms.UiRepositories.Services;
 
 public class RepositoryManagerService : IRepositoryManagerService, IAdvancedUserCheck
 {
+#if FREE_VERSION
+    private readonly ILocalStorageService _localStorage;
+    private RepositoryInfo? _currentRepository;
+    private const string CurrentRepositoryKey = "current-repository";
+
+    public event Action<RepositoryInfo>? CurrentRepositoryChanged;
+
+    public RepositoryManagerService(ILocalStorageService localStorage)
+    {
+        _localStorage = localStorage;
+    }
+
+    public Task<List<RepositoryInfo>> GetRepositoriesAsync()
+    {
+        var result = new List<RepositoryInfo>();
+        if (_currentRepository != null)
+        {
+            result.Add(_currentRepository);
+        }
+
+        return Task.FromResult(result);
+    }
+
+    public async Task<RepositoryInfo?> GetCurrentRepositoryAsync()
+    {
+        if (_currentRepository == null)
+        {
+            _currentRepository = await _localStorage.GetItemAsync<RepositoryInfo>(CurrentRepositoryKey);
+        }
+
+        return _currentRepository;
+    }
+
+    public async Task SetCurrentRepositoryAsync(RepositoryInfo repository)
+    {
+        _currentRepository = repository;
+        await _localStorage.SetItemAsync(CurrentRepositoryKey, repository);
+        CurrentRepositoryChanged?.Invoke(repository);
+    }
+
+    public async Task<bool> IsAdvancedUserAsync()
+    {
+        var repo = await GetCurrentRepositoryAsync();
+        if (repo == null)
+        {
+            return false;
+        }
+
+        return repo.ShowAdvancedOptions;
+    }
+#else
     private readonly IRepositoryService _repositoryService;
     private readonly ILocalStorageService _localStorage;
     private List<RepositoryInfo>? _cachedRepositories;
@@ -25,6 +76,7 @@ public class RepositoryManagerService : IRepositoryManagerService, IAdvancedUser
         {
             _cachedRepositories = await _repositoryService.GetRepositoriesAsync();
         }
+
         return _cachedRepositories;
     }
 
@@ -47,6 +99,7 @@ public class RepositoryManagerService : IRepositoryManagerService, IAdvancedUser
                 }
             }
         }
+
         return _currentRepository;
     }
 
@@ -62,4 +115,5 @@ public class RepositoryManagerService : IRepositoryManagerService, IAdvancedUser
         var repo = await GetCurrentRepositoryAsync();
         return repo!.ShowAdvancedOptions;
     }
+#endif
 }
