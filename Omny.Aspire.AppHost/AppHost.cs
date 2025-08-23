@@ -8,5 +8,8 @@ var localStack = builder
     .WithLifetime(ContainerLifetime.Persistent)
     .WithHttpEndpoint(port: 4566, targetPort: 4566, name: "localstack", isProxied: false);
 
+var postgres = builder.AddPostgres("postgres");
+var filesDb = postgres.AddDatabase("filesdb");
+
 var app = builder.Build();
 await app.RunAsync();

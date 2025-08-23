@@ -25,6 +25,7 @@ public class PlaywrightFixture : IDisposable
     public async Task StartAsync()
     {
         string serviceUrl;
+        string dbConnectionString;
         try
         {
             var builder = await DistributedApplicationTestingBuilder.CreateAsync<Projects.Omny_Aspire_AppHost>();
@@ -41,6 +42,13 @@ public class PlaywrightFixture : IDisposable
             }
 
             serviceUrl = urls.First().Url;
+
+            var dbResource = await app.ResourceNotifications.WaitForResourceHealthyAsync("filesdb", cts.Token);
+            if (!dbResource.Resource.TryGetConnectionString(out var conn))
+            {
+                throw new Exception("filesdb connection string not found");
+            }
+            dbConnectionString = conn;
 
             var config = new AmazonS3Config
             {
@@ -113,6 +121,7 @@ public class PlaywrightFixture : IDisposable
         {
             AspireFailed = true;
             serviceUrl = "http://localhost:4566";
+            dbConnectionString = "Host=localhost;Username=postgres;Password=postgres;Database=filesdb";
         }
 
         _playwright = await Playwright.CreateAsync();
@@ -122,7 +131,7 @@ public class PlaywrightFixture : IDisposable
         _tempDir2 = new TempDir();
         _bucketPrefix = Guid.NewGuid().ToString("N");
         string cdnUrl = $"{serviceUrl}/test-bucket/";
-        Factory = new LocalRepoFactory(_tempDir1.Path, _tempDir2.Path, serviceUrl, cdnUrl, _bucketPrefix);
+        Factory = new LocalRepoFactory(_tempDir1.Path, _tempDir2.Path, serviceUrl, cdnUrl, _bucketPrefix, dbConnectionString);
         Client = Factory.CreateClient();
         var csrfTokenResponse = await Client.PostAsync("/api/csrf/token", null);
         var csrfTokenResult = await csrfTokenResponse.Content.ReadFromJsonAsync<TokenResponse>();

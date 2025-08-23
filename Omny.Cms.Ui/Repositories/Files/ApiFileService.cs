@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Linq;
 using Octokit;
 using Omny.Cms.UiRepositories.Files;
 using Omny.Cms.UiRepositories.Models;
@@ -10,6 +11,11 @@ public class ApiFileService : IRemoteFileService
 {
     private readonly HttpClient _client;
 
+    private static string EncodePath(string path)
+    {
+        return string.Join("/", path.Split('/').Select(Uri.EscapeDataString));
+    }
+
     public ApiFileService(HttpClient client)
     {
         _client = client;
@@ -17,13 +23,13 @@ public class ApiFileService : IRemoteFileService
 
     public async Task<IEnumerable<CacheableTreeItem>> GetFilesAsync()
     {
-        var items = await _client.GetFromJsonAsync<List<CacheableTreeItem>>("files");
+        var items = await _client.GetFromJsonAsync<List<CacheableTreeItem>>("items");
         return items ?? new List<CacheableTreeItem>();
     }
 
     public async Task<RemoteFileContents> GetFileContentsAsync(string path)
     {
-       var res = await _client.GetAsync($"file?path={Uri.EscapeDataString(path)}");
+        var res = await _client.GetAsync($"items/{EncodePath(path)}");
         if (res.StatusCode == HttpStatusCode.NotFound)
         {
             return new RemoteFileContents(string.Empty, path, null);
@@ -47,27 +53,31 @@ public class ApiFileService : IRemoteFileService
 
     public async Task RenameFolderAsync(string oldFolderPath, string newFolderPath)
     {
-        await _client.PostAsJsonAsync("rename-folder", new { oldFolderPath, newFolderPath });
+        await _client.PostAsJsonAsync("folders/rename", new { oldFolderPath, newFolderPath });
     }
 
     public async Task DeleteFolderAsync(string folderPath)
     {
-        await _client.DeleteAsync($"folder?folderPath={folderPath}");
+        await _client.DeleteAsync($"folders/{EncodePath(folderPath)}");
     }
 
     public async Task DeleteFilesAsync(string[] filePaths)
     {
-        await _client.PostAsJsonAsync("delete-files", filePaths);
+        var request = new HttpRequestMessage(HttpMethod.Delete, "items")
+        {
+            Content = JsonContent.Create(filePaths)
+        };
+        await _client.SendAsync(request);
     }
 
     public async Task WriteFilesAsync(Dictionary<string, string> filesWithContents)
     {
-        await _client.PostAsJsonAsync("write-files", filesWithContents);
+        await _client.PutAsJsonAsync("items", filesWithContents);
     }
 
     public async Task WriteBinaryFilesAsync(Dictionary<string, byte[]> filesWithContents)
     {
         var payload = filesWithContents.ToDictionary(kvp => kvp.Key, kvp => Convert.ToBase64String(kvp.Value));
-        await _client.PostAsJsonAsync("write-binary-files", payload);
+        await _client.PutAsJsonAsync("items/binary", payload);
     }
 }
