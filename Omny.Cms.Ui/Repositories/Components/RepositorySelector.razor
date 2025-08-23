@@ -4,7 +4,9 @@
 @using Omny.Cms.UiRepositories.Services
 
 <div class="repository-selector">
-    @if (!string.IsNullOrEmpty(BuildWatcher.Status))
+@if (IsFreeVersion)
+{
+    if (!string.IsNullOrEmpty(BuildWatcher.Status))
     {
         if (BuildWatcher.CurrentBuildUrl != null)
         {
@@ -23,7 +25,40 @@
     <select id="repository-dropdown" @onchange="OnRepositoryChanged" value="@GetCurrentRepositoryId()">
         @if (repositories != null)
         {
-            @foreach (var repo in repositories)
+            foreach (var repo in repositories)
+            {
+                <option value="@GetRepositoryId(repo)">@repo.Name</option>
+            }
+        }
+    </select>
+    <button class="add-repo" @onclick="OpenAddRepositoryDialogAsync">+</button>
+    @if (currentRepository?.PreviewUrl != null)
+    {
+        <a class="preview-link" href="@currentRepository.PreviewUrl" target="_blank">See Preview</a>
+    }
+}
+else
+{
+    if (!string.IsNullOrEmpty(BuildWatcher.Status))
+    {
+        if (BuildWatcher.CurrentBuildUrl != null)
+        {
+            <a class="update-link" href="@BuildWatcher.CurrentBuildUrl" target="_blank">@BuildWatcher.Status</a>
+        }
+        else
+        {
+            <button class="update-link" disabled>@BuildWatcher.Status</button>
+        }
+    }
+    else if (currentRepository?.HasWorkflowDispatch == true)
+    {
+        <button class="update-link" @onclick="TriggerUpdate">Update Site</button>
+    }
+    <label for="repository-dropdown">Site:</label>
+    <select id="repository-dropdown" @onchange="OnRepositoryChanged" value="@GetCurrentRepositoryId()">
+        @if (repositories != null)
+        {
+            foreach (var repo in repositories)
             {
                 <option value="@GetRepositoryId(repo)">@repo.Name</option>
             }
@@ -33,6 +68,7 @@
     {
         <a class="preview-link" href="@currentRepository.PreviewUrl" target="_blank">See Preview</a>
     }
+}
 </div>
 
 <style>
@@ -69,6 +105,14 @@
         border-radius: 4px;
         text-decoration: none;
         color: #333;
+    }
+
+    .repository-selector .add-repo {
+        padding: 4px 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        background-color: #f5f5f5;
+        cursor: pointer;
     }
 
     .repository-selector .update-link:hover,

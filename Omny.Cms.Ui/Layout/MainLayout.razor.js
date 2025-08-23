@@ -5,7 +5,6 @@ export function omnyLogout() {
     document.cookie.split(';').forEach(function(c) {
         document.cookie = c.replace(/^ +/, '').replace(/=.*/, '=;expires=' + new Date(0).toUTCString() + ';path=/');
     });
-    window.location.href = '/Account/Logout'; // Redirect to login page
 }
 
 export function setTopMenuVisible(show) {

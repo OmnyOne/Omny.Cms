@@ -6,6 +6,7 @@ public interface IRepositoryManagerService
 {
     Task<List<RepositoryInfo>> GetRepositoriesAsync();
     Task<RepositoryInfo?> GetCurrentRepositoryAsync();
+    Task AddRepositoryAsync(RepositoryInfo repository);
     Task SetCurrentRepositoryAsync(RepositoryInfo repository);
     event Action<RepositoryInfo>? CurrentRepositoryChanged;
 }

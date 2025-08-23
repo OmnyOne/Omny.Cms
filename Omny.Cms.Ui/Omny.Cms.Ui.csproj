@@ -38,4 +38,8 @@
     <_ContentIncludedByDefault Remove="Images\Pages\Images.razor" />
   </ItemGroup>
 
+  <PropertyGroup Condition="'$(FreeVersion)' == 'true'">
+    <DefineConstants>$(DefineConstants);FREE_VERSION</DefineConstants>
+  </PropertyGroup>
+
 </Project>
