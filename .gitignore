@@ -7,3 +7,4 @@ bin/
 *.user
 node_modules/
 Omny.Cms.Ui/wwwroot/js-plugins/
+publish/
