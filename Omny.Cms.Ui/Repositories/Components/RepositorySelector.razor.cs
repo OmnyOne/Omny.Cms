@@ -11,13 +11,10 @@ public class RepositorySelectorBase : ComponentBase, IDisposable
     [Inject] protected NavigationManager NavigationManager { get; set; } = default!;
     [Inject] protected BuildWatcherService BuildWatcher { get; set; } = default!;
     [Inject] protected ISnackbar Snackbar { get; set; } = default!;
+    [Inject] protected IDialogService DialogService { get; set; } = default!;
 
     protected List<RepositoryInfo>? repositories;
     protected RepositoryInfo? currentRepository;
-    protected string owner = string.Empty;
-    protected string repoName = string.Empty;
-    protected string branch = "main";
-    protected string token = string.Empty;
 
     protected static bool IsFreeVersion =>
 #if FREE_VERSION
@@ -29,8 +26,8 @@ public class RepositorySelectorBase : ComponentBase, IDisposable
     protected override async Task OnInitializedAsync()
     {
 #if FREE_VERSION
+        repositories = await RepositoryManager.GetRepositoriesAsync();
         currentRepository = await RepositoryManager.GetCurrentRepositoryAsync();
-        repositories = currentRepository != null ? new List<RepositoryInfo> { currentRepository } : new List<RepositoryInfo>();
 #else
         repositories = await RepositoryManager.GetRepositoriesAsync();
         currentRepository = await RepositoryManager.GetCurrentRepositoryAsync();
@@ -39,6 +36,24 @@ public class RepositorySelectorBase : ComponentBase, IDisposable
         BuildWatcher.StatusChanged += OnBuildStatusChanged;
         BuildWatcher.BuildCompleted += OnBuildCompleted;
         StateHasChanged();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+#if FREE_VERSION
+        if (firstRender)
+        {
+            if (repositories == null)
+            {
+                return;
+            }
+
+            if (repositories.Count == 0)
+            {
+                await OpenAddRepositoryDialogAsync();
+            }
+        }
+#endif
     }
 
     protected void OnCurrentRepositoryChanged(RepositoryInfo repository)
@@ -76,30 +91,22 @@ public class RepositorySelectorBase : ComponentBase, IDisposable
         return currentRepository != null ? GetRepositoryId(currentRepository) : "";
     }
 
-    protected async Task SaveRepository()
+    protected async Task OpenAddRepositoryDialogAsync()
     {
-#if FREE_VERSION
-        if (string.IsNullOrWhiteSpace(owner) || string.IsNullOrWhiteSpace(repoName) || string.IsNullOrWhiteSpace(token))
+        var dialog = await DialogService.ShowAsync<AddRepositoryDialog>("Add Repository");
+        var result = await dialog.Result;
+        if (result.Canceled)
         {
             return;
         }
 
-        var repo = new RepositoryInfo
+        if (result.Data is RepositoryInfo repo)
         {
-            Owner = owner,
-            RepoName = repoName,
-            Branch = branch,
-            Token = token,
-            Name = repoName
-        };
-
-        await RepositoryManager.SetCurrentRepositoryAsync(repo);
-        repositories = new List<RepositoryInfo> { repo };
-        currentRepository = repo;
-        StateHasChanged();
-#else
-        await Task.CompletedTask;
-#endif
+            await RepositoryManager.AddRepositoryAsync(repo);
+            repositories = await RepositoryManager.GetRepositoriesAsync();
+            currentRepository = repo;
+            StateHasChanged();
+        }
     }
 
     protected async Task TriggerUpdate()

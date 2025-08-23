@@ -1,0 +1,50 @@
+@namespace Omny.Cms.UiRepositories.Components
+@using MudBlazor
+@using Omny.Cms.UiRepositories.Models
+
+<MudDialog>
+    <DialogContent>
+        <MudTextField @bind-Value="owner" Label="Owner" />
+        <MudTextField @bind-Value="repoName" Label="Repository" />
+        <MudTextField @bind-Value="branch" Label="Branch" />
+        <MudTextField @bind-Value="token" Label="Token" InputType="InputType.Password" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Save" Disabled="@SaveDisabled">Save</MudButton>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] public IMudDialogInstance MudDialog { get; set; } = default!;
+    private string owner = string.Empty;
+    private string repoName = string.Empty;
+    private string branch = "main";
+    private string token = string.Empty;
+
+    private bool SaveDisabled => string.IsNullOrWhiteSpace(owner) || string.IsNullOrWhiteSpace(repoName) || string.IsNullOrWhiteSpace(token);
+
+    private void Save()
+    {
+        if (SaveDisabled)
+        {
+            return;
+        }
+
+        var repo = new RepositoryInfo
+        {
+            Owner = owner,
+            RepoName = repoName,
+            Branch = branch,
+            Token = token,
+            Name = repoName
+        };
+
+        MudDialog.Close(DialogResult.Ok(repo));
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+}

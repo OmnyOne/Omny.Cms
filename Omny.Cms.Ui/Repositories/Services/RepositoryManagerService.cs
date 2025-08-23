@@ -7,7 +7,9 @@ public class RepositoryManagerService : IRepositoryManagerService, IAdvancedUser
 {
 #if FREE_VERSION
     private readonly ILocalStorageService _localStorage;
+    private readonly List<RepositoryInfo> _repositories = new();
     private RepositoryInfo? _currentRepository;
+    private const string RepositoriesKey = "repositories";
     private const string CurrentRepositoryKey = "current-repository";
 
     public event Action<RepositoryInfo>? CurrentRepositoryChanged;
@@ -17,15 +19,18 @@ public class RepositoryManagerService : IRepositoryManagerService, IAdvancedUser
         _localStorage = localStorage;
     }
 
-    public Task<List<RepositoryInfo>> GetRepositoriesAsync()
+    public async Task<List<RepositoryInfo>> GetRepositoriesAsync()
     {
-        var result = new List<RepositoryInfo>();
-        if (_currentRepository != null)
+        if (_repositories.Count == 0)
         {
-            result.Add(_currentRepository);
+            var stored = await _localStorage.GetItemAsync<List<RepositoryInfo>>(RepositoriesKey);
+            if (stored != null)
+            {
+                _repositories.AddRange(stored);
+            }
         }
 
-        return Task.FromResult(result);
+        return _repositories;
     }
 
     public async Task<RepositoryInfo?> GetCurrentRepositoryAsync()
@@ -36,6 +41,13 @@ public class RepositoryManagerService : IRepositoryManagerService, IAdvancedUser
         }
 
         return _currentRepository;
+    }
+
+    public async Task AddRepositoryAsync(RepositoryInfo repository)
+    {
+        _repositories.Add(repository);
+        await _localStorage.SetItemAsync(RepositoriesKey, _repositories);
+        await SetCurrentRepositoryAsync(repository);
     }
 
     public async Task SetCurrentRepositoryAsync(RepositoryInfo repository)
@@ -101,6 +113,11 @@ public class RepositoryManagerService : IRepositoryManagerService, IAdvancedUser
         }
 
         return _currentRepository;
+    }
+
+    public Task AddRepositoryAsync(RepositoryInfo repository)
+    {
+        return Task.CompletedTask;
     }
 
     public async Task SetCurrentRepositoryAsync(RepositoryInfo repository)

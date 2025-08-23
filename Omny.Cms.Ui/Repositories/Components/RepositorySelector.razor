@@ -6,36 +6,35 @@
 <div class="repository-selector">
 @if (IsFreeVersion)
 {
-    if (currentRepository == null)
+    if (!string.IsNullOrEmpty(BuildWatcher.Status))
     {
-        <input @bind="owner" placeholder="Owner" />
-        <input @bind="repoName" placeholder="Repository" />
-        <input @bind="branch" placeholder="Branch" />
-        <input @bind="token" type="password" placeholder="Token" />
-        <button @onclick="SaveRepository">Save</button>
+        if (BuildWatcher.CurrentBuildUrl != null)
+        {
+            <a class="update-link" href="@BuildWatcher.CurrentBuildUrl" target="_blank">@BuildWatcher.Status</a>
+        }
+        else
+        {
+            <button class="update-link" disabled>@BuildWatcher.Status</button>
+        }
     }
-    else
+    else if (currentRepository?.HasWorkflowDispatch == true)
     {
-        if (!string.IsNullOrEmpty(BuildWatcher.Status))
+        <button class="update-link" @onclick="TriggerUpdate">Update Site</button>
+    }
+    <label for="repository-dropdown">Site:</label>
+    <select id="repository-dropdown" @onchange="OnRepositoryChanged" value="@GetCurrentRepositoryId()">
+        @if (repositories != null)
         {
-            if (BuildWatcher.CurrentBuildUrl != null)
+            foreach (var repo in repositories)
             {
-                <a class="update-link" href="@BuildWatcher.CurrentBuildUrl" target="_blank">@BuildWatcher.Status</a>
-            }
-            else
-            {
-                <button class="update-link" disabled>@BuildWatcher.Status</button>
+                <option value="@GetRepositoryId(repo)">@repo.Name</option>
             }
         }
-        else if (currentRepository?.HasWorkflowDispatch == true)
-        {
-            <button class="update-link" @onclick="TriggerUpdate">Update Site</button>
-        }
-        <span>@currentRepository.Name</span>
-        @if (currentRepository?.PreviewUrl != null)
-        {
-            <a class="preview-link" href="@currentRepository.PreviewUrl" target="_blank">See Preview</a>
-        }
+    </select>
+    <button class="add-repo" @onclick="OpenAddRepositoryDialogAsync">+</button>
+    @if (currentRepository?.PreviewUrl != null)
+    {
+        <a class="preview-link" href="@currentRepository.PreviewUrl" target="_blank">See Preview</a>
     }
 }
 else
@@ -106,6 +105,14 @@ else
         border-radius: 4px;
         text-decoration: none;
         color: #333;
+    }
+
+    .repository-selector .add-repo {
+        padding: 4px 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        background-color: #f5f5f5;
+        cursor: pointer;
     }
 
     .repository-selector .update-link:hover,
