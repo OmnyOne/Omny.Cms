@@ -13,7 +13,7 @@ using System.Text.Json;
 
 namespace Omny.Cms.UiEditor.Pages;
 
-public class EditorBase : ComponentBase
+public class EditorBase : ComponentBase, IDisposable
 {
     [Inject] private HttpClient ApiClient { get; set; } = default!;
     [Inject] private IRemoteFileService RemoteFileService { get; set; } = default!;
@@ -46,6 +46,28 @@ public class EditorBase : ComponentBase
     protected override async Task OnInitializedAsync()
     {
         _currentRepo = await RepositoryManager.GetCurrentRepositoryAsync();
+        
+        // Subscribe to repository changes to reinitialize when a repository is added
+        RepositoryManager.CurrentRepositoryChanged += OnRepositoryChanged;
+        
+        // Don't initialize editor if no repository is configured
+        if (_currentRepo == null)
+        {
+            return;
+        }
+
+        await InitializeEditorAsync();
+    }
+
+    private async void OnRepositoryChanged(RepositoryInfo repository)
+    {
+        _currentRepo = repository;
+        await InitializeEditorAsync();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task InitializeEditorAsync()
+    {
         var contentTypes = (await EditorService.GetContentTypesAsync()).ToList();
         _contentTypesList = contentTypes.ToList();
 
@@ -435,5 +457,10 @@ public class EditorBase : ComponentBase
         var module = await JS.InvokeAsync<IJSObjectReference>("import", "../Layout/MainLayout.razor.js");
         await module.InvokeVoidAsync("setTopMenuVisible", !_fullScreen);
         StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        RepositoryManager.CurrentRepositoryChanged -= OnRepositoryChanged;
     }
 }
