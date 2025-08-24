@@ -1,10 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 
-    <PropertyGroup>
-        <Nullable>enable</Nullable>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <RootNamespace>Omny.Cms.Ui</RootNamespace>
-    </PropertyGroup>
+  <PropertyGroup>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Omny.Cms.Ui</RootNamespace>
+    <Configurations>Debug;Release;Debug-Free;Release-Free</Configurations>
+  </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Blazored.LocalStorage" />
@@ -19,6 +20,7 @@
     <PackageReference Include="MudBlazor" />
     <PackageReference Include="AWSSDK.S3" />
   </ItemGroup>
+  
 
   <ItemGroup>
     <ProjectReference Include="../Omny.Cms.Abstractions/Omny.Cms.Abstractions.csproj" />
@@ -38,7 +40,8 @@
     <_ContentIncludedByDefault Remove="Images\Pages\Images.razor" />
   </ItemGroup>
 
-  <PropertyGroup Condition="'$(FreeVersion)' == 'true'">
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug-Free' or '$(Configuration)' == 'Release-Free'">
+    <FreeVersion>true</FreeVersion>
     <DefineConstants>$(DefineConstants);FREE_VERSION</DefineConstants>
   </PropertyGroup>
 

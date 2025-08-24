@@ -5,6 +5,8 @@
     <Nullable>enable</Nullable>
     <RootNamespace>Omny.Cms</RootNamespace>
     <IsPackable>true</IsPackable>
+    <Configurations>Debug;Release;Debug-Free</Configurations>
+    <Platforms>AnyCPU</Platforms>
   </PropertyGroup>
 
   <ItemGroup>

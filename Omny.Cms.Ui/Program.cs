@@ -70,8 +70,8 @@ builder.Services.AddScoped<Omny.Cms.Editor.Plugins.QuillHtmlEditorPlugin>();
 builder.Services.AddScoped<Omny.Cms.Editor.Plugins.TinyMceHtmlEditorPlugin>();
 builder.Services.AddScoped<Omny.Cms.Plugins.Fields.TextEditorPlugin>();
 builder.Services.AddSingleton<AuthRedirectHandler>();
-#if !FREE_VERSION
 builder.Services.AddSingleton<CsrfTokenProvider>();
+#if !FREE_VERSION
 builder.Services.AddApiAuthorization();
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddHttpClient("ApiClient",
