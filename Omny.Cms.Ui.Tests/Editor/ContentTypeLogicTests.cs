@@ -387,4 +387,37 @@ public class ContentTypeLogicTests
         Assert.Pass();
     }
 
+    [Test]
+    public async Task GetContentItemsAsync_UsesSerializerPluginForFileBasedItems()
+    {
+        var remote = new InMemoryRemoteService();
+        remote.Files["posts/first.md"] = "---\ntitle: First\n---\nBody";
+
+        var services = new ServiceCollection();
+        services.AddMajorPlugins();
+        var provider = services.BuildServiceProvider();
+
+        var hexo = provider.GetServices<IContentTypePlugin>().OfType<HexoPostPlugin>().Single();
+        var manifest = new OmnyManifest
+        {
+            HtmlEditor = "tinymce",
+            ContentTypeDefinitions = new Dictionary<string, ContentTypeMetadata>
+            {
+                ["Post"] = hexo.Configure(new ContentTypePluginConfiguration("Post", "posts/"))
+            }
+        };
+
+        var service = new ManifestEditorService(
+            remote.Mock.Object,
+            Mock.Of<IImageStorageService>(),
+            provider.GetServices<IContentTypePlugin>(),
+            provider.GetRequiredService<IContentTypeSerializer>(),
+            new Core.Editor.ManifestProvider(),
+            manifest);
+
+        var items = (await service.GetContentItemsAsync("Post")).ToList();
+        Assert.That(items, Has.Exactly(1).Items);
+        Assert.AreEqual("first", items[0].Name);
+        Assert.AreEqual("First", items[0].FieldValues?["title"]?.ToString());
+    }
 }

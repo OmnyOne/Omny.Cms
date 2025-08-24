@@ -40,19 +40,18 @@ public class DefaultContentTypeSerializer(IEnumerable<IFieldPlugin> fieldPlugins
             .Where(f => f.StartsWith(metadata.Folder, StringComparison.OrdinalIgnoreCase))
             .Select(f => Path.GetDirectoryName(f)!)
             .Where(d => !string.IsNullOrEmpty(d))
-            .Distinct();
+            .Distinct()
+            .ToList();
 
-        List<ContentItem> items = new();
-        foreach (var dir in directories)
-        {
-            var item = await ReadAsync(contentType, dir, manifest, fileSystem);
-            if (item != null)
-            {
-                items.Add(item);
-            }
-        }
+        var tasks = directories
+            .Select(dir => ReadAsync(contentType, dir, manifest, fileSystem))
+            .ToArray();
 
-        return items;
+        var results = await Task.WhenAll(tasks);
+        return results
+            .Where(r => r != null)
+            .Cast<ContentItem>()
+            .ToList();
     }
 
     public Task<Dictionary<string, string>> WriteAsync(ContentItem item,

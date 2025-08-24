@@ -134,64 +134,15 @@ public class RemoteContentService(
     public async Task<IEnumerable<ContentItem>> GetContentItemsAsync(string contentTypeName)
     {
         OmnyManifest manifest = await GetManifestAsync();
-        var files = await _remoteFileService.GetFilesAsync();
-        if (!manifest.ContentTypeDefinitions.TryGetValue(contentTypeName, out var metadata))
+        if (!manifest.ContentTypeDefinitions.TryGetValue(contentTypeName, out _))
         {
             return Enumerable.Empty<ContentItem>();
         }
 
-        if (metadata.Fields is { Length: > 0 } && metadata.Folder is not null)
-        {
-            var fs = new RemoteFileSystem(_remoteFileService);
-            var directories = files.Select(f => f.Path)
-                .Where(p => p.StartsWith(metadata.Folder, StringComparison.OrdinalIgnoreCase))
-                .Select(Path.GetDirectoryName)
-                .Where(d => !string.IsNullOrEmpty(d))
-                .Distinct()
-                .ToList();
-
-            var tasks = directories
-                .Select(d => _serializer.ReadAsync(contentTypeName, d!, manifest, fs))
-                .ToArray();
-
-            var results = await Task.WhenAll(tasks);
-            return results.Where(r => r != null).Cast<ContentItem>().ToList();
-        }
-        else if (metadata.FileExtensionToIdMapping is not null)
-        {
-            var fs = new RemoteFileSystem(_remoteFileService);
-            var tasks = new List<Task<ContentItem?>>();
-            foreach (var file in files)
-            {
-                string? id = GetId(file.Path, contentTypeName, manifest);
-                if (id is null)
-                {
-                    continue;
-                }
-
-                tasks.Add(_serializer.ReadAsync(contentTypeName, file.Path, manifest, fs));
-            }
-
-            var results = await Task.WhenAll(tasks);
-            return results.Where(r => r != null).Cast<ContentItem>().ToList();
-        }
-
-        return Enumerable.Empty<ContentItem>();
-    }
-
-    private string? GetId(string filePath, string contentTypeName, OmnyManifest manifest)
-    {
-        if (manifest.ContentTypeDefinitions.TryGetValue(contentTypeName, out var metadata) && metadata.FileExtensionToIdMapping is not null)
-        {
-            foreach (var kvp in metadata.FileExtensionToIdMapping)
-            {
-                if (filePath.EndsWith(kvp.Key, StringComparison.OrdinalIgnoreCase) && filePath.StartsWith(kvp.Value, StringComparison.OrdinalIgnoreCase))
-                {
-                    return filePath.Substring(kvp.Value.Length, filePath.Length - kvp.Value.Length - kvp.Key.Length);
-                }
-            }
-        }
-        return null;
+        var files = await _remoteFileService.GetFilesAsync();
+        var fileNames = files.Select(f => f.Path).ToList();
+        var fs = new RemoteFileSystem(_remoteFileService);
+        return await _serializer.GetContentItemsAsync(fileNames, contentTypeName, manifest, fs);
     }
 
     public async Task<IEnumerable<string>> GetImagesAsync()
