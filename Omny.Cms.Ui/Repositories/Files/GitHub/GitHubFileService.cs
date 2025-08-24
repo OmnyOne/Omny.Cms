@@ -38,6 +38,12 @@ namespace Omny.Cms.UiRepositories.Files.GitHub
 
         private async Task<IEnumerable<CacheableTreeItem>> GetRemoteFilesAsync(RepositoryInfo repositoryInfo)
         {
+            // Return empty list if no valid repository is configured
+            if (string.IsNullOrEmpty(repositoryInfo.Owner) || string.IsNullOrEmpty(repositoryInfo.RepoName))
+            {
+                return new List<CacheableTreeItem>();
+            }
+
             var client = await _gitHubClientProvider.GetClientAsync();
             Repository repo = await _gitHubClientProvider.GetRepositoryAsync();
             string sha = await _gitHubClientProvider.GetBranchShaAsync();
@@ -187,6 +193,12 @@ namespace Omny.Cms.UiRepositories.Files.GitHub
 
         private async Task<RemoteFileContents> GetRemoteFileContentsAsync(RepositoryInfo repositoryInfo, string path)
         {
+            // Return empty content if no valid repository is configured
+            if (string.IsNullOrEmpty(repositoryInfo.Owner) || string.IsNullOrEmpty(repositoryInfo.RepoName))
+            {
+                return new RemoteFileContents(repositoryInfo.Branch, path, null);
+            }
+
             var client = await _gitHubClientProvider.GetClientAsync();
             Repository repo = await _gitHubClientProvider.GetRepositoryAsync();
             string sha = await _gitHubClientProvider.GetBranchShaAsync();

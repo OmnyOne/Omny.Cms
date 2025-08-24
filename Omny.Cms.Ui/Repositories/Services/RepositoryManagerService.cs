@@ -130,7 +130,12 @@ public class RepositoryManagerService : IRepositoryManagerService, IAdvancedUser
     public async Task<bool> IsAdvancedUserAsync()
     {
         var repo = await GetCurrentRepositoryAsync();
-        return repo!.ShowAdvancedOptions;
+        if (repo == null)
+        {
+            return false;
+        }
+
+        return repo.ShowAdvancedOptions;
     }
 #endif
 }
