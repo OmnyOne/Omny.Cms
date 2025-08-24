@@ -21,6 +21,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IFieldPlugin, MarkdownEditorPlugin>();
         services.AddSingleton<IFieldPlugin, TinyMceHtmlEditorPlugin>();
         services.AddSingleton<IFieldPlugin, TextEditorPlugin>();
+        services.AddSingleton<IFieldPlugin, TextFieldPlugin>();
         services.AddSingleton<IFieldPlugin, Cms.Editor.Fields.ImageFieldPlugin>();
         services.AddSingleton<IFieldPlugin, Cms.Editor.Fields.ImageTextFieldPlugin>();
         services.AddScoped<IDialogService, DialogService>();

@@ -75,7 +75,7 @@ public static class ManifestLoader
             var menuPlugin = plugins.Single(p => p.ContentType == "Omny.Menu");
             manifest.ContentTypeDefinitions["Menu"] = menuPlugin.Configure(new ContentTypePluginConfiguration("Menu", "content/menus/"));
             var postPlugin = plugins.Single(p => p.ContentType == "Hexo.Post");
-            manifest.ContentTypeDefinitions["Post"] = postPlugin.Configure(new ContentTypePluginConfiguration("Blog Post", "content/posts/"));
+            manifest.ContentTypeDefinitions["Post"] = postPlugin.Configure(new ContentTypePluginConfiguration("Blog Post", "source/_posts/"));
         }
 
         foreach (var kv in manifest.ContentTypeDefinitions.ToList())

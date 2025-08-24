@@ -7,7 +7,7 @@ public class TextEditorPlugin : IFieldPlugin
 {
     public string DisplayName => "Text";
     public string? Icon => "📄";
-    public string FieldType => "Text";
+    public string FieldType => "TextArea";
 
     public object? DefaultValue => string.Empty;
     

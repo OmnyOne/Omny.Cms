@@ -19,13 +19,13 @@ public class TextFieldPlugin : IFieldPlugin
     {
         return builder =>
         {
-            builder.OpenElement(0, "input");
-            builder.AddAttribute(1, "value", value?.ToString() ?? string.Empty);
-            builder.AddAttribute(2, "oninput", EventCallback.Factory.Create<ChangeEventArgs>(this,
-                e => onChanged.InvokeAsync(e.Value)));
-            builder.AddAttribute(3,"class", "text-field");
-            builder.AddAttribute(4,"placeholder", "Enter text...");
-            builder.CloseElement();
+            builder.OpenComponent(0, typeof(MudBlazor.MudTextField<string>));
+            builder.AddAttribute(1, "Value", value?.ToString() ?? string.Empty);
+            builder.AddAttribute(2, "ValueChanged", EventCallback.Factory.Create<string>(this,
+                v => onChanged.InvokeAsync(v)));
+            builder.AddAttribute(3, "Class", "text-field");
+            builder.AddAttribute(4, "Placeholder", "Enter text...");
+            builder.CloseComponent();
         };
     }
 }
