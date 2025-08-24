@@ -1,4 +1,5 @@
 using System.Text;
+using System.Linq;
 using Omny.Cms.Editor.ContentTypes;
 using Omny.Cms.Manifest;
 using Omny.Cms.Editor;
@@ -72,7 +73,14 @@ public class HexoPostSerializer(DefaultContentTypeSerializer defaultSerializer) 
 
             if (fieldContents.TryGetValue(field.Name, out var val))
             {
-                fm[field.Name] = val;
+                if (val is CollectionFieldContent coll)
+                {
+                    fm[field.Name] = coll.Items.Select(i => (object?)i.Content).ToList();
+                }
+                else
+                {
+                    fm[field.Name] = val;
+                }
             }
         }
 

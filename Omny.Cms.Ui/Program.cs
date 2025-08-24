@@ -58,6 +58,7 @@ builder.Services.AddScoped<IFieldPlugin, ImageFieldPlugin>();
 builder.Services.AddScoped<IFieldPlugin, ImageTextFieldPlugin>();
 builder.Services.AddScoped<IFieldPlugin, MenuItemFieldPlugin>();
 builder.Services.AddScoped<IFieldPlugin, DateFieldPlugin>();
+builder.Services.AddScoped<IFieldPlugin, DateTimeFieldPlugin>();
 
 builder.Services.AddScoped<IEditorService, ManifestEditorService>();
 builder.Services.AddSingleton<IManifestProvider, ManifestProvider>();

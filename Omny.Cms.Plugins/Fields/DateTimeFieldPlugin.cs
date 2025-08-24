@@ -4,11 +4,11 @@ using System;
 
 namespace Omny.Cms.Plugins.Fields;
 
-public class DateFieldPlugin : IFieldPlugin
+public class DateTimeFieldPlugin : IFieldPlugin
 {
-    public string DisplayName => "Date";
+    public string DisplayName => "Date/Time";
     public string? Icon => "📅";
-    public string FieldType => "date";
+    public string FieldType => "datetime";
     public object? DefaultValue => string.Empty;
     public string[] SupportedExtensions => Array.Empty<string>();
     public bool CanHandle(string fileExtension) => false;
@@ -17,17 +17,17 @@ public class DateFieldPlugin : IFieldPlugin
         return builder =>
         {
             builder.OpenElement(0, "input");
-            builder.AddAttribute(1, "type", "date");
+            builder.AddAttribute(1, "type", "datetime-local");
             string formatted = value switch
             {
-                DateTime dt => dt.ToString("yyyy-MM-dd"),
-                DateTimeOffset dto => dto.ToString("yyyy-MM-dd"),
-                string s when DateTime.TryParse(s, out var parsed) => parsed.ToString("yyyy-MM-dd"),
+                DateTime dt => dt.ToString("yyyy-MM-ddTHH:mm:ss"),
+                DateTimeOffset dto => dto.ToString("yyyy-MM-ddTHH:mm:ss"),
+                string s when DateTime.TryParse(s, out var parsed) => parsed.ToString("yyyy-MM-ddTHH:mm:ss"),
                 _ => value?.ToString() ?? string.Empty
             };
             builder.AddAttribute(2, "value", formatted);
             builder.AddAttribute(3, "onchange", EventCallback.Factory.Create<ChangeEventArgs>(this, e => onChanged.InvokeAsync(e.Value)));
-            builder.AddAttribute(4, "class", "date-field");
+            builder.AddAttribute(4, "class", "datetime-field");
             builder.CloseElement();
         };
     }

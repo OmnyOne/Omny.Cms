@@ -10,6 +10,7 @@ using Omny.Cms.UiEditor.Components;
 using Omny.Cms.UiRepositories.Services;
 using Omny.Cms.UiImages.Components;
 using System.Text.Json;
+using System.Linq;
 
 namespace Omny.Cms.UiEditor.Pages;
 
@@ -263,43 +264,56 @@ public class EditorBase : ComponentBase, IDisposable
             {
                 var entries = new List<FieldContent>();
                 bool handled = false;
-                if (item.FieldValues != null && item.FieldValues.TryGetValue(field.Name, out var collVal) && collVal is JsonElement collElem)
+                if (item.FieldValues != null && item.FieldValues.TryGetValue(field.Name, out var collVal))
                 {
-                    var manifest = await EditorService.GetManifestAsync();
-                    if (manifest.ContentTypeDefinitions.TryGetValue(typeName, out var meta))
+                    if (collVal is JsonElement collElem)
                     {
-                        string folderName = item.Name;
-                        if (!string.IsNullOrEmpty(meta.FolderField) && item.FieldValues.TryGetValue(meta.FolderField, out var fldVal))
+                        var manifest = await EditorService.GetManifestAsync();
+                        if (manifest.ContentTypeDefinitions.TryGetValue(typeName, out var meta))
                         {
-                            if (fldVal is JsonElement je && je.ValueKind == JsonValueKind.String)
-                                folderName = je.GetString() ?? folderName;
-                            else if (fldVal is string s)
-                                folderName = s;
-                        }
-                        string baseDir = meta.Folder is not null ? System.IO.Path.Combine(meta.Folder, folderName).Replace("\\", "/") : string.Empty;
-
-                        var arrayElem = collElem.ValueKind == System.Text.Json.JsonValueKind.Array ? collElem :
-                            (collElem.TryGetProperty("items", out var it) && it.ValueKind == System.Text.Json.JsonValueKind.Array ? it : default);
-                        if (arrayElem.ValueKind == System.Text.Json.JsonValueKind.Array)
-                        {
-                            for (int i = 0; i < arrayElem.GetArrayLength(); i++)
+                            string folderName = item.Name;
+                            if (!string.IsNullOrEmpty(meta.FolderField) && item.FieldValues.TryGetValue(meta.FolderField, out var fldVal))
                             {
-                                var entry = arrayElem[i];
-                                string type = entry.GetProperty("type").GetString() ?? "text";
-                                if (entry.TryGetProperty("value", out var v))
-                                {
-                                    entries.Add(new FieldContent(type, v.GetRawText()));
-                                }
-                                else if (entry.TryGetProperty("file", out var f))
-                                {
-                                    string fileName = f.GetString() ?? string.Empty;
-                                    string path = string.IsNullOrEmpty(baseDir) ? fileName : System.IO.Path.Combine(baseDir, fileName).Replace("\\", "/");
-                                    var data = await RemoteFileService.GetFileContentsAsync(path);
-                                    entries.Add(new FieldContent(type, data.Contents ?? string.Empty));
-                                }
+                                if (fldVal is JsonElement je && je.ValueKind == JsonValueKind.String)
+                                    folderName = je.GetString() ?? folderName;
+                                else if (fldVal is string s)
+                                    folderName = s;
                             }
-                            handled = true;
+                            string baseDir = meta.Folder is not null ? System.IO.Path.Combine(meta.Folder, folderName).Replace("\\", "/") : string.Empty;
+
+                            var arrayElem = collElem.ValueKind == System.Text.Json.JsonValueKind.Array ? collElem :
+                                (collElem.TryGetProperty("items", out var it) && it.ValueKind == System.Text.Json.JsonValueKind.Array ? it : default);
+                            if (arrayElem.ValueKind == System.Text.Json.JsonValueKind.Array)
+                            {
+                                for (int i = 0; i < arrayElem.GetArrayLength(); i++)
+                                {
+                                    var entry = arrayElem[i];
+                                    string type = entry.GetProperty("type").GetString() ?? "text";
+                                    if (entry.TryGetProperty("value", out var v))
+                                    {
+                                        entries.Add(new FieldContent(type, v.GetRawText()));
+                                    }
+                                    else if (entry.TryGetProperty("file", out var f))
+                                    {
+                                        string fileName = f.GetString() ?? string.Empty;
+                                        string path = string.IsNullOrEmpty(baseDir) ? fileName : System.IO.Path.Combine(baseDir, fileName).Replace("\\", "/");
+                                        var data = await RemoteFileService.GetFileContentsAsync(path);
+                                        entries.Add(new FieldContent(type, data.Contents ?? string.Empty));
+                                    }
+                                }
+                                handled = true;
+                            }
                         }
+                    }
+                    else if (collVal is System.Collections.IEnumerable enumerable && collVal is not string)
+                    {
+                        var def = await EditorService.GetFieldTypeDefinitionAsync(field.FieldType);
+                        string entryType = def?.AllowedFieldTypes?.FirstOrDefault() ?? "text";
+                        foreach (var obj in enumerable)
+                        {
+                            entries.Add(new FieldContent(entryType, obj?.ToString() ?? string.Empty));
+                        }
+                        handled = true;
                     }
                 }
 

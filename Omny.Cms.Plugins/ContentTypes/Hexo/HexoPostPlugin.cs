@@ -19,8 +19,8 @@ public class HexoPostPlugin : IContentTypePlugin
         Fields =
         [
             new FieldDefinition("title", "text", null, "Title"),
-            new FieldDefinition("date", "date", null, "Date"),
-            new FieldDefinition("updated", "date", null, "Updated"),
+            new FieldDefinition("date", "datetime", null, "Date"),
+            new FieldDefinition("updated", "datetime", null, "Updated"),
             new FieldDefinition("tags", "TextList", null, "Tags"),
             new FieldDefinition("categories", "TextList", null, "Categories"),
             new FieldDefinition("Body", "Markdown", ".md", "Body")
