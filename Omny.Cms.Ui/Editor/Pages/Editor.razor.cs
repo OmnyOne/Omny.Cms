@@ -42,14 +42,17 @@ public class EditorBase : ComponentBase, IDisposable
     protected Dictionary<string, List<ContentItem>> _contentTypesMap = new();
     protected RepositoryInfo? _currentRepo;
     protected string _searchTerm = string.Empty;
+    protected bool _isRepositoryLoading = true;
 
     protected override async Task OnInitializedAsync()
     {
         _currentRepo = await RepositoryManager.GetCurrentRepositoryAsync();
-        
+
         // Subscribe to repository changes to reinitialize when a repository is added
         RepositoryManager.CurrentRepositoryChanged += OnRepositoryChanged;
-        
+
+        _isRepositoryLoading = false;
+
         // Don't initialize editor if no repository is configured
         if (_currentRepo == null)
         {

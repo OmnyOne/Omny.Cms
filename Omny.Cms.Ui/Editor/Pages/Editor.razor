@@ -18,7 +18,7 @@
     </div>
 }
 
-@if (_currentRepo == null)
+@if (_currentRepo == null && !_isRepositoryLoading)
 {
     <div class="editor-container">
         <div class="editor-main" style="text-align: center; padding: 2rem;">
@@ -27,6 +27,14 @@
             <MudText Typo="Typo.body1" Color="Color.Secondary">
                 Please add a repository to start editing content.
             </MudText>
+        </div>
+    </div>
+}
+else if (_currentRepo == null)
+{
+    <div class="editor-container">
+        <div class="editor-main" style="text-align: center; padding: 2rem;">
+            <MudProgressCircular Indeterminate Size="Size.Large" />
         </div>
     </div>
 }
