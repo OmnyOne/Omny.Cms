@@ -10,6 +10,7 @@ using NUnit.Framework;
 using System.Collections.Generic;
 using Omny.Cms.Manifest;
 using Omny.Cms.UiRepositories.Files.GitHub;
+using Omny.Cms.UiRepositories.Models;
 
 namespace Omny.Cms.Ui.Tests.Editor;
 
@@ -45,9 +46,11 @@ public class EditorPageTests
         ctx.Services.AddSingleton(Mock.Of<IRemoteFileService>());
         ctx.Services.AddSingleton(Mock.Of<IPluginRegistry>());
         ctx.Services.AddSingleton(Mock.Of<IAdvancedUserCheck>());
-        var repoMgr = Mock.Of<IRepositoryManagerService>();
-        ctx.Services.AddSingleton(repoMgr);
-        ctx.Services.AddSingleton(new BuildWatcherService(Mock.Of<IGitHubClientProvider>(), repoMgr));
+        var repoMgr = new Mock<IRepositoryManagerService>();
+        repoMgr.Setup(r => r.GetCurrentRepositoryAsync())
+            .ReturnsAsync(new RepositoryInfo());
+        ctx.Services.AddSingleton<IRepositoryManagerService>(repoMgr.Object);
+        ctx.Services.AddSingleton(new BuildWatcherService(Mock.Of<IGitHubClientProvider>(), repoMgr.Object));
 
         var cut = ctx.RenderComponent<Omny.Cms.UiEditor.Pages.Editor>();
 
