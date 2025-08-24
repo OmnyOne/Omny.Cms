@@ -11,11 +11,11 @@
     <PackageReference Include="Blazored.TextEditor" />
     <PackageReference Include="Cropper.Blazor" />
     <PackageReference Include="TinyMCE.Blazor" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" PrivateAssets="all" />
-        <PackageReference Include="Microsoft.Extensions.Http" />
-        <PackageReference Include="Octokit" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Extensions.Http" />
+    <PackageReference Include="Octokit" />
     <PackageReference Include="MudBlazor" />
     <PackageReference Include="AWSSDK.S3" />
   </ItemGroup>
