@@ -173,7 +173,6 @@ public class LocalRepoPlaywrightTests
         
         await page.WaitForSelectorAsync("button:has-text('Load picture')");
         
-
         var imagePreview = await page.WaitForSelectorAsync("img");
         Assert.IsNotNull(imagePreview);
         var imageSrc = await imagePreview!.GetAttributeAsync("src");

@@ -44,9 +44,15 @@ public class PlaywrightFixture : IDisposable
             serviceUrl = urls.First().Url;
 
             var dbResource = await app.ResourceNotifications.WaitForResourceHealthyAsync("filesdb", cts.Token);
-            if (!dbResource.Resource.TryGetConnectionString(out var conn))
+            var dbInfo = dbResource.Resource as IResourceWithConnectionString;
+            if (dbInfo is null)
             {
-                throw new Exception("filesdb connection string not found");
+                throw new Exception("filesdb resource not found");
+            }
+            var conn = await dbInfo.GetConnectionStringAsync(cts.Token);
+            if (conn is null)
+            {
+                throw new Exception("filesdb connection string is null");
             }
             dbConnectionString = conn;
 
