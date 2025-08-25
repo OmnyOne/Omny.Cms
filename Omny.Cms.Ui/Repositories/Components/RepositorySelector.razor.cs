@@ -15,6 +15,7 @@ public class RepositorySelectorBase : ComponentBase, IDisposable
 
     protected List<RepositoryInfo>? repositories;
     protected RepositoryInfo? currentRepository;
+    private string? _lastStatus;
 
     protected static bool IsFreeVersion =>
 #if FREE_VERSION
@@ -34,7 +35,6 @@ public class RepositorySelectorBase : ComponentBase, IDisposable
 #endif
         RepositoryManager.CurrentRepositoryChanged += OnCurrentRepositoryChanged;
         BuildWatcher.StatusChanged += OnBuildStatusChanged;
-        BuildWatcher.BuildCompleted += OnBuildCompleted;
         StateHasChanged();
     }
 
@@ -64,14 +64,43 @@ public class RepositorySelectorBase : ComponentBase, IDisposable
 
     private void OnBuildStatusChanged()
     {
-        InvokeAsync(StateHasChanged);
+        InvokeAsync(() =>
+        {
+            if (BuildWatcher.Status != _lastStatus && !string.IsNullOrEmpty(BuildWatcher.Status))
+            {
+                var severity = BuildWatcher.Status switch
+                {
+                    "Update Completed" => Severity.Success,
+                    "Update Failed" => Severity.Error,
+                    "Updating Site" => Severity.Info,
+                    _ => Severity.Info
+                };
+                Snackbar.Add(BuildWatcher.Status, severity, options =>
+                {
+                    if (BuildWatcher.CurrentBuildUrl != null)
+                    {
+                        options.Action = "View build";
+                        var url = BuildWatcher.CurrentBuildUrl;
+                        options.OnClick = _ =>
+                        {
+                            NavigationManager.NavigateTo(url, true);
+                            return Task.CompletedTask;
+                        };
+                    }
+                });
+                _lastStatus = BuildWatcher.Status;
+            }
+            StateHasChanged();
+        });
     }
 
     protected async Task OnRepositoryChanged(ChangeEventArgs e)
     {
         var selectedId = e.Value?.ToString();
         if (string.IsNullOrEmpty(selectedId) || repositories == null)
+        {
             return;
+        }
 
         var selectedRepo = repositories.FirstOrDefault(r => GetRepositoryId(r) == selectedId);
         if (selectedRepo != null)
@@ -114,15 +143,9 @@ public class RepositorySelectorBase : ComponentBase, IDisposable
         await BuildWatcher.TriggerWorkflowAsync();
     }
 
-    private void OnBuildCompleted()
-    {
-        Snackbar.Add("Site updated", Severity.Success);
-    }
-
     public void Dispose()
     {
         RepositoryManager.CurrentRepositoryChanged -= OnCurrentRepositoryChanged;
         BuildWatcher.StatusChanged -= OnBuildStatusChanged;
-        BuildWatcher.BuildCompleted -= OnBuildCompleted;
     }
 }
