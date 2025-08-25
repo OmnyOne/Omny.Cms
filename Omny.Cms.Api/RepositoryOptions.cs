@@ -21,8 +21,9 @@ public class RepositoryInfo
     public bool UseLeftItemSelector { get; set; } = false;
 
     public string? LocalPath { get; set; }
+    public string? DatabaseConnectionString { get; set; }
 
-    public bool UseApiFileService => !string.IsNullOrEmpty(LocalPath);
+    public bool UseApiFileService => !string.IsNullOrEmpty(LocalPath) || !string.IsNullOrEmpty(DatabaseConnectionString);
     
     public HashSet<string> UserEmails { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 }

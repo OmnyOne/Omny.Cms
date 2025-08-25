@@ -12,14 +12,16 @@ public class LocalRepoFactory : CustomWebAppFactory
     private readonly string _bucketPrefix;
     private readonly string _cdnUrl;
     private readonly string _serviceUrl;
+    private readonly string _dbConnectionString;
 
-    public LocalRepoFactory(string path1, string path2, string serviceUrl, string cdnUrl, string bucketPrefix)
+    public LocalRepoFactory(string path1, string path2, string serviceUrl, string cdnUrl, string bucketPrefix, string dbConnectionString)
     {
         _path1 = path1;
         _path2 = path2;
         _bucketPrefix = bucketPrefix;
         _cdnUrl = cdnUrl;
         _serviceUrl = serviceUrl;
+        _dbConnectionString = dbConnectionString;
     }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -53,6 +55,20 @@ public class LocalRepoFactory : CustomWebAppFactory
                 ["Repositories:Available:1:ImageStorage:CdnUrl"] = _cdnUrl,
                 ["Repositories:Available:1:ImageStorage:BucketPrefix"] = _bucketPrefix,
                 ["Repositories:Available:1:UserEmails:0"] = "test@example.com",
+
+                ["Repositories:Available:2:Owner"] = "local",
+                ["Repositories:Available:2:RepoName"] = "local3",
+                ["Repositories:Available:2:Name"] = "Local 3",
+                ["Repositories:Available:2:Branch"] = "main",
+                ["Repositories:Available:2:DatabaseConnectionString"] = _dbConnectionString,
+                ["Repositories:Available:2:ImageStorage:BucketServiceUrl"] = _serviceUrl,
+                ["Repositories:Available:2:ImageStorage:BucketName"] = "test-bucket",
+                ["Repositories:Available:2:ImageStorage:Region"] = "us-east-1",
+                ["Repositories:Available:2:ImageStorage:AccessKey"] = "test",
+                ["Repositories:Available:2:ImageStorage:SecretKey"] = "test",
+                ["Repositories:Available:2:ImageStorage:CdnUrl"] = _cdnUrl,
+                ["Repositories:Available:2:ImageStorage:BucketPrefix"] = _bucketPrefix,
+                ["Repositories:Available:2:UserEmails:0"] = "test@example.com",
 
                 ["Users:Admins:0:Email"] = "test@example.com",
                 ["Auth0:Domain"] = "example.com",

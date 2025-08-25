@@ -28,11 +28,12 @@ public class LocalRepoPlaywrightTests
 
     [TestCase("Local 1")]
     [TestCase("Local 2")]
+    [TestCase("Local 3")]
     public async Task RepositoryEndpointUsesApiFlag(string repoName)
     {
-        if (_playwrightFixture!.AspireFailed && repoName == "Local 2")
+        if (_playwrightFixture!.AspireFailed && (repoName == "Local 2" || repoName == "Local 3"))
         {
-            Assert.Ignore("Aspire environment not available, skipping Local 2 test.");
+            Assert.Ignore("Aspire environment not available, skipping test.");
         }
         var repos = await _playwrightFixture.Client!.GetFromJsonAsync<List<RepositoryInfo>>("api/repositories");
         Assert.IsNotNull(repos);
@@ -127,11 +128,12 @@ public class LocalRepoPlaywrightTests
     [Test]
     [TestCase("Local 1")]
     [TestCase("Local 2")]
+    [TestCase("Local 3")]
     public async Task CanUploadImageViaSelector(string repoName)
     {
-        if (_playwrightFixture!.AspireFailed && repoName == "Local 2")
+        if (_playwrightFixture!.AspireFailed && (repoName == "Local 2" || repoName == "Local 3"))
         {
-            Assert.Ignore("Aspire environment not available, skipping Local 2 test.");
+            Assert.Ignore("Aspire environment not available, skipping test.");
         }
         var browserContext = await _playwrightFixture!.Browser.NewContextAsync(new BrowserNewContextOptions
         {
@@ -171,7 +173,6 @@ public class LocalRepoPlaywrightTests
         
         await page.WaitForSelectorAsync("button:has-text('Load picture')");
         
-
         var imagePreview = await page.WaitForSelectorAsync("img");
         Assert.IsNotNull(imagePreview);
         var imageSrc = await imagePreview!.GetAttributeAsync("src");

@@ -123,7 +123,7 @@ var apiGroup = app.MapGroup("/api");
 
 apiGroup.AddCoreApis();
 
-apiGroup.AddFileApis();
+apiGroup.AddStorageApis();
 
 #if DEBUG
 
