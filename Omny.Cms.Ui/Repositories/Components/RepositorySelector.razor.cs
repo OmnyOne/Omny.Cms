@@ -80,7 +80,12 @@ public class RepositorySelectorBase : ComponentBase, IDisposable
                     if (BuildWatcher.CurrentBuildUrl != null)
                     {
                         options.Action = "View build";
-                        options.ActionHref = BuildWatcher.CurrentBuildUrl;
+                        var url = BuildWatcher.CurrentBuildUrl;
+                        options.Onclick = _ =>
+                        {
+                            NavigationManager.NavigateTo(url, true);
+                            return Task.CompletedTask;
+                        };
                     }
                 });
                 _lastStatus = BuildWatcher.Status;
