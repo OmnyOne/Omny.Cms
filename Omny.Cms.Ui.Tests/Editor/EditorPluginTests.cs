@@ -95,7 +95,7 @@ public class EditorPluginTests
         // Act & Assert
         Assert.AreEqual("Markdown", markdownPlugin.FieldType);
         Assert.AreEqual("HTML", htmlPlugin.FieldType);
-        Assert.AreEqual("Text", textPlugin.FieldType);
+        Assert.AreEqual("TextArea", textPlugin.FieldType);
 
         // Ensure all names are unique
         var names = new[] { markdownPlugin.FieldType, htmlPlugin.FieldType, textPlugin.FieldType };
