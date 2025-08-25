@@ -40,7 +40,9 @@ namespace Omny.Cms.UiRepositories.Services
         {
             _repo = await _repositoryManager.GetCurrentRepositoryAsync();
             if (_repo == null || _repo.UseApiFileService || string.IsNullOrWhiteSpace(_repo.BuildActionsToWatch))
+            {
                 return;
+            }
 
             _actions = _repo.BuildActionsToWatch == "*" ? null :
                 _repo.BuildActionsToWatch.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
@@ -63,7 +65,9 @@ namespace Omny.Cms.UiRepositories.Services
         {
             _repo = await _repositoryManager.GetCurrentRepositoryAsync();
             if (_repo == null || _repo.UseApiFileService || string.IsNullOrWhiteSpace(_repo.BuildActionsToWatch))
+            {
                 return;
+            }
 
             var client = await _gitHubClientProvider.GetClientAsync();
             var workflows = await client.Actions.Workflows.List(_repo.Owner, _repo.RepoName);
@@ -78,7 +82,9 @@ namespace Omny.Cms.UiRepositories.Services
         private async Task CheckAsync()
         {
             if (_repo == null)
+            {
                 return;
+            }
 
             try
             {

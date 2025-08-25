@@ -81,7 +81,7 @@ public class RepositorySelectorBase : ComponentBase, IDisposable
                     {
                         options.Action = "View build";
                         var url = BuildWatcher.CurrentBuildUrl;
-                        options.Onclick = _ =>
+                        options.OnClick = _ =>
                         {
                             NavigationManager.NavigateTo(url, true);
                             return Task.CompletedTask;
@@ -98,7 +98,9 @@ public class RepositorySelectorBase : ComponentBase, IDisposable
     {
         var selectedId = e.Value?.ToString();
         if (string.IsNullOrEmpty(selectedId) || repositories == null)
+        {
             return;
+        }
 
         var selectedRepo = repositories.FirstOrDefault(r => GetRepositoryId(r) == selectedId);
         if (selectedRepo != null)
