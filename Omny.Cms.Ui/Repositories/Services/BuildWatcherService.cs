@@ -22,10 +22,13 @@ namespace Omny.Cms.UiRepositories.Services
 
         public event Action? BuildCompleted;
 
+        public event Action? BuildFailed;
+
         public event Action? StatusChanged;
 
         public string? CurrentBuildUrl { get; private set; }
         public string Status { get; private set; } = string.Empty;
+        public bool IsUpdating { get; private set; }
 
         public BuildWatcherService(IGitHubClientProvider gitHubClientProvider, IRepositoryManagerService repositoryManager)
         {
@@ -51,6 +54,7 @@ namespace Omny.Cms.UiRepositories.Services
             _latestRun = null;
             _timer?.Dispose();
             Status = "Watching for changes";
+            IsUpdating = true;
             StatusChanged?.Invoke();
             _timer = new Timer(async _ => await CheckAsync(), null, TimeSpan.Zero, TimeSpan.FromSeconds(3));
         }
@@ -92,17 +96,31 @@ namespace Omny.Cms.UiRepositories.Services
                     .FirstOrDefault(r => _actions == null || _actions.Contains(r.Name, StringComparer.OrdinalIgnoreCase));
 
                 const string updateCompleted = "Update Completed";
+                const string updateFailed = "Update Failed";
                 if (run != null)
                 {
                     _latestRun = run;
                     CurrentBuildUrl = run.HtmlUrl;
                     if (run.Status == WorkflowRunStatus.Completed)
                     {
-                        if (Status != updateCompleted)
+                        IsUpdating = false;
+                        if (run.Conclusion == WorkflowRunConclusion.Success)
                         {
-                            Status = updateCompleted;
-                            _completedAt ??= DateTimeOffset.UtcNow;
-                            BuildCompleted?.Invoke();
+                            if (Status != updateCompleted)
+                            {
+                                Status = updateCompleted;
+                                _completedAt ??= DateTimeOffset.UtcNow;
+                                BuildCompleted?.Invoke();
+                            }
+                        }
+                        else
+                        {
+                            if (Status != updateFailed)
+                            {
+                                Status = updateFailed;
+                                _completedAt ??= DateTimeOffset.UtcNow;
+                                BuildFailed?.Invoke();
+                            }
                         }
 
                         if (DateTimeOffset.UtcNow - _completedAt > TimeSpan.FromMinutes(1))
@@ -114,19 +132,33 @@ namespace Omny.Cms.UiRepositories.Services
                     else
                     {
                         const string updatingSite = "Updating Site";
-                        
+
                         Status = updatingSite;
                         _completedAt = null;
-                        
+                        IsUpdating = true;
                     }
                 }
                 else if (_latestRun != null && _latestRun.Status == WorkflowRunStatus.Completed)
                 {
-                    if (Status != updateCompleted)
+                    CurrentBuildUrl = _latestRun.HtmlUrl;
+                    IsUpdating = false;
+                    if (_latestRun.Conclusion == WorkflowRunConclusion.Success)
                     {
-                        Status = updateCompleted;
-                        _completedAt ??= DateTimeOffset.UtcNow;
-                        BuildCompleted?.Invoke();
+                        if (Status != updateCompleted)
+                        {
+                            Status = updateCompleted;
+                            _completedAt ??= DateTimeOffset.UtcNow;
+                            BuildCompleted?.Invoke();
+                        }
+                    }
+                    else
+                    {
+                        if (Status != updateFailed)
+                        {
+                            Status = updateFailed;
+                            _completedAt ??= DateTimeOffset.UtcNow;
+                            BuildFailed?.Invoke();
+                        }
                     }
 
                     _completedAt ??= DateTimeOffset.UtcNow;
@@ -154,6 +186,7 @@ namespace Omny.Cms.UiRepositories.Services
             _latestRun = null;
             CurrentBuildUrl = null;
             Status = string.Empty;
+            IsUpdating = false;
         }
 
         public void Dispose()

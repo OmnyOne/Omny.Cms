@@ -6,20 +6,9 @@
 <div class="repository-selector">
 @if (IsFreeVersion)
 {
-    if (!string.IsNullOrEmpty(BuildWatcher.Status))
+    if (currentRepository?.HasWorkflowDispatch == true)
     {
-        if (BuildWatcher.CurrentBuildUrl != null)
-        {
-            <a class="update-link" href="@BuildWatcher.CurrentBuildUrl" target="_blank">@BuildWatcher.Status</a>
-        }
-        else
-        {
-            <button class="update-link" disabled>@BuildWatcher.Status</button>
-        }
-    }
-    else if (currentRepository?.HasWorkflowDispatch == true)
-    {
-        <button class="update-link" @onclick="TriggerUpdate">Update Site</button>
+        <button class="update-link" @onclick="TriggerUpdate" disabled="@BuildWatcher.IsUpdating">Update Site</button>
     }
     <label for="repository-dropdown">Site:</label>
     <select id="repository-dropdown" @onchange="OnRepositoryChanged" value="@GetCurrentRepositoryId()">
@@ -39,20 +28,9 @@
 }
 else
 {
-    if (!string.IsNullOrEmpty(BuildWatcher.Status))
+    if (currentRepository?.HasWorkflowDispatch == true)
     {
-        if (BuildWatcher.CurrentBuildUrl != null)
-        {
-            <a class="update-link" href="@BuildWatcher.CurrentBuildUrl" target="_blank">@BuildWatcher.Status</a>
-        }
-        else
-        {
-            <button class="update-link" disabled>@BuildWatcher.Status</button>
-        }
-    }
-    else if (currentRepository?.HasWorkflowDispatch == true)
-    {
-        <button class="update-link" @onclick="TriggerUpdate">Update Site</button>
+        <button class="update-link" @onclick="TriggerUpdate" disabled="@BuildWatcher.IsUpdating">Update Site</button>
     }
     <label for="repository-dropdown">Site:</label>
     <select id="repository-dropdown" @onchange="OnRepositoryChanged" value="@GetCurrentRepositoryId()">
