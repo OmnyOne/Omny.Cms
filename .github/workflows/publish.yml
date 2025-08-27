@@ -51,6 +51,29 @@ jobs:
           dotnet publish Omny.Cms.Ui -c Release -p:FreeVersion=true -o ./publish/ui-free
           aws s3 rm s3://sites.omny.ca --recursive
           aws s3 sync ./publish/ui/wwwroot/ s3://sites.omny.ca/
-          aws s3 sync ./publish/ui-free/wwwroot/ s3://sites.omny.ca/free/
       - name: Publish to NuGet
         run: dotnet nuget push **/bin/Release/*.nupkg -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json
+
+      - name: Sanitize branch name
+        id: branch
+        run: |
+          BRANCH_NAME="${GITHUB_REF_NAME//\//-}"
+          echo "branch=$BRANCH_NAME" >> "$GITHUB_OUTPUT"
+  
+      - name: Deploy to Cloudflare Workers (main)
+        if: github.ref_name == 'main'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: 4.26.0
+          command: versions upload
+
+      - name: Deploy to Cloudflare Workers (preview)
+        if: github.ref_name != 'main'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: 4.26.0
+          command: versions upload --preview-alias ${{ github.head_ref || github.ref_name }}

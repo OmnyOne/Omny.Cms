@@ -1,0 +1,7 @@
+name = "free-sites-omny-ca"
+compatibility_date = "2024-09-25"
+preview_urls = true
+
+[assets]
+directory = "./publish/ui-free"
+not_found_handling = "single-page-application"
