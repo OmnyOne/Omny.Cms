@@ -1,5 +1,9 @@
 using Blazored.LocalStorage;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.WebUtilities;
 using Omny.Cms.UiRepositories.Models;
+using System.Text;
+using System.Text.Json;
 
 namespace Omny.Cms.UiRepositories.Services;
 
@@ -7,20 +11,69 @@ public class RepositoryManagerService : IRepositoryManagerService, IAdvancedUser
 {
 #if FREE_VERSION
     private readonly ILocalStorageService _localStorage;
+    private readonly NavigationManager _navigationManager;
     private readonly List<RepositoryInfo> _repositories = new();
     private RepositoryInfo? _currentRepository;
+    private bool _repoParamChecked;
     private const string RepositoriesKey = "repositories";
     private const string CurrentRepositoryKey = "current-repository";
 
     public event Action<RepositoryInfo>? CurrentRepositoryChanged;
 
-    public RepositoryManagerService(ILocalStorageService localStorage)
+    public RepositoryManagerService(ILocalStorageService localStorage, NavigationManager navigationManager)
     {
         _localStorage = localStorage;
+        _navigationManager = navigationManager;
+    }
+
+    private async Task CheckRepoQueryParameterAsync()
+    {
+        if (_repoParamChecked)
+        {
+            return;
+        }
+
+        _repoParamChecked = true;
+
+        var uri = _navigationManager.ToAbsoluteUri(_navigationManager.Uri);
+        var query = QueryHelpers.ParseQuery(uri.Query);
+        if (!query.TryGetValue("repo", out var repoParam))
+        {
+            return;
+        }
+
+        try
+        {
+            var json = Encoding.UTF8.GetString(Convert.FromBase64String(repoParam.ToString()));
+            var repo = JsonSerializer.Deserialize<RepositoryInfo>(json);
+            if (repo == null)
+            {
+                return;
+            }
+
+            if (_repositories.Count == 0)
+            {
+                var stored = await _localStorage.GetItemAsync<List<RepositoryInfo>>(RepositoriesKey);
+                if (stored != null)
+                {
+                    _repositories.AddRange(stored);
+                }
+            }
+
+            _repositories.RemoveAll(r => r.Name == repo.Name);
+            _repositories.Add(repo);
+            await _localStorage.SetItemAsync(RepositoriesKey, _repositories);
+            await SetCurrentRepositoryAsync(repo);
+        }
+        catch
+        {
+            // Ignore invalid repo parameter
+        }
     }
 
     public async Task<List<RepositoryInfo>> GetRepositoriesAsync()
     {
+        await CheckRepoQueryParameterAsync();
         if (_repositories.Count == 0)
         {
             var stored = await _localStorage.GetItemAsync<List<RepositoryInfo>>(RepositoriesKey);
@@ -35,6 +88,7 @@ public class RepositoryManagerService : IRepositoryManagerService, IAdvancedUser
 
     public async Task<RepositoryInfo?> GetCurrentRepositoryAsync()
     {
+        await CheckRepoQueryParameterAsync();
         if (_currentRepository == null)
         {
             _currentRepository = await _localStorage.GetItemAsync<RepositoryInfo>(CurrentRepositoryKey);
@@ -45,6 +99,7 @@ public class RepositoryManagerService : IRepositoryManagerService, IAdvancedUser
 
     public async Task AddRepositoryAsync(RepositoryInfo repository)
     {
+        _repositories.RemoveAll(r => r.Name == repository.Name);
         _repositories.Add(repository);
         await _localStorage.SetItemAsync(RepositoriesKey, _repositories);
         await SetCurrentRepositoryAsync(repository);
