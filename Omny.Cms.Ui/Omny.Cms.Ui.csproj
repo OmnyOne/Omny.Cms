@@ -19,6 +19,7 @@
     <PackageReference Include="Octokit" />
     <PackageReference Include="MudBlazor" />
     <PackageReference Include="AWSSDK.S3" />
+    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" />
   </ItemGroup>
   
 
