@@ -25,6 +25,21 @@
     {
         <a class="preview-link" href="@currentRepository.PreviewUrl" target="_blank">See Preview</a>
     }
+    @if (currentRepository?.NeedsPrToMerge == false)
+    {
+        <button class="update-link" @onclick="Deploy">Deploy</button>
+    }
+    else if (currentRepository?.NeedsPrToMerge == true)
+    {
+        if (string.IsNullOrEmpty(DeploymentRequestUrl))
+        {
+            <button class="update-link" @onclick="RequestDeployment">Request Deployment</button>
+        }
+        else
+        {
+            <a class="update-link" href="@DeploymentRequestUrl" target="_blank">View Deployment Request</a>
+        }
+    }
 }
 else
 {
@@ -45,6 +60,21 @@ else
     @if (currentRepository?.PreviewUrl != null)
     {
         <a class="preview-link" href="@currentRepository.PreviewUrl" target="_blank">See Preview</a>
+    }
+    @if (currentRepository?.NeedsPrToMerge == false)
+    {
+        <button class="update-link" @onclick="Deploy">Deploy</button>
+    }
+    else if (currentRepository?.NeedsPrToMerge == true)
+    {
+        if (string.IsNullOrEmpty(DeploymentRequestUrl))
+        {
+            <button class="update-link" @onclick="RequestDeployment">Request Deployment</button>
+        }
+        else
+        {
+            <a class="update-link" href="@DeploymentRequestUrl" target="_blank">View Deployment Request</a>
+        }
     }
 }
 </div>

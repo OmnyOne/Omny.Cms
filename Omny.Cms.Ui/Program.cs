@@ -64,6 +64,7 @@ builder.Services.AddScoped<IEditorService, ManifestEditorService>();
 builder.Services.AddSingleton<IManifestProvider, ManifestProvider>();
 builder.Services.AddScoped<IPluginRegistry, PluginRegistry>();
 builder.Services.AddScoped<BuildWatcherService>();
+builder.Services.AddScoped<DeploymentService>();
 
 // Register editor plugins
 builder.Services.AddScoped<Omny.Cms.Editor.Plugins.MarkdownEditorPlugin>();

@@ -5,6 +5,7 @@ public class RepositoryInfo
     public string Owner { get; set; } = string.Empty;
     public string RepoName { get; set; } = string.Empty;
     public string Branch { get; set; } = string.Empty;
+    public string TargetBranch { get; set; } = "main";
     public string Token { get; set; } = string.Empty;
 
     public string Name { get; set; } = string.Empty;
@@ -14,6 +15,8 @@ public class RepositoryInfo
     public string? BuildActionsToWatch { get; set; }
 
     public bool HasWorkflowDispatch { get; set; } = false;
+
+    public bool? NeedsPrToMerge { get; set; }
 
     public string? PreviewUrl { get; set; }
 

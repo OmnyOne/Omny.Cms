@@ -12,9 +12,11 @@ public class RepositorySelectorBase : ComponentBase, IDisposable
     [Inject] protected BuildWatcherService BuildWatcher { get; set; } = default!;
     [Inject] protected ISnackbar Snackbar { get; set; } = default!;
     [Inject] protected IDialogService DialogService { get; set; } = default!;
+    [Inject] protected DeploymentService DeploymentService { get; set; } = default!;
 
     protected List<RepositoryInfo>? repositories;
     protected RepositoryInfo? currentRepository;
+    protected string? DeploymentRequestUrl;
     private string? _lastStatus;
 
     protected static bool IsFreeVersion =>
@@ -35,6 +37,7 @@ public class RepositorySelectorBase : ComponentBase, IDisposable
 #endif
         RepositoryManager.CurrentRepositoryChanged += OnCurrentRepositoryChanged;
         BuildWatcher.StatusChanged += OnBuildStatusChanged;
+        await RefreshDeploymentStatusAsync();
         StateHasChanged();
     }
 
@@ -56,9 +59,10 @@ public class RepositorySelectorBase : ComponentBase, IDisposable
 #endif
     }
 
-    protected void OnCurrentRepositoryChanged(RepositoryInfo repository)
+    protected async void OnCurrentRepositoryChanged(RepositoryInfo repository)
     {
         currentRepository = repository;
+        await RefreshDeploymentStatusAsync();
         InvokeAsync(StateHasChanged);
     }
 
@@ -141,6 +145,29 @@ public class RepositorySelectorBase : ComponentBase, IDisposable
     protected async Task TriggerUpdate()
     {
         await BuildWatcher.TriggerWorkflowAsync();
+    }
+
+    protected async Task Deploy()
+    {
+        await DeploymentService.MergeAsync();
+    }
+
+    protected async Task RequestDeployment()
+    {
+        DeploymentRequestUrl = await DeploymentService.CreatePullRequestAsync();
+        StateHasChanged();
+    }
+
+    private async Task RefreshDeploymentStatusAsync()
+    {
+        if (currentRepository?.NeedsPrToMerge == true)
+        {
+            DeploymentRequestUrl = await DeploymentService.GetOpenPullRequestUrlAsync();
+        }
+        else
+        {
+            DeploymentRequestUrl = null;
+        }
     }
 
     public void Dispose()

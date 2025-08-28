@@ -6,6 +6,7 @@ public class RepositoryInfo
     public string RepoName { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty; // Friendly name for people
     public string Branch { get; set; } = string.Empty;
+    public string TargetBranch { get; set; } = "main";
     public string Token { get; set; } = string.Empty;
     
     public bool ShowAdvancedOptions { get; set; } = true;
@@ -15,6 +16,8 @@ public class RepositoryInfo
     public string? PreviewUrl { get; set; }
 
     public bool HasWorkflowDispatch { get; set; } = false;
+
+    public bool? NeedsPrToMerge { get; set; }
 
     public ImageStorageOptions? ImageStorage { get; set; }
 

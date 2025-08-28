@@ -7,7 +7,12 @@
         <MudTextField @bind-Value="owner" Label="Owner" />
         <MudTextField @bind-Value="repoName" Label="Repository" />
         <MudTextField @bind-Value="branch" Label="Branch" />
+        <MudTextField @bind-Value="targetBranch" Label="Target Branch" />
         <MudTextField @bind-Value="token" Label="Token" InputType="InputType.Password" />
+        <MudSelect T="bool?" @bind-Value="needsPrToMerge" Label="Needs PR To Merge">
+            <MudSelectItem Value="@((bool?)true)">True</MudSelectItem>
+            <MudSelectItem Value="@((bool?)false)">False</MudSelectItem>
+        </MudSelect>
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="Save" Disabled="@SaveDisabled">Save</MudButton>
@@ -20,7 +25,9 @@
     private string owner = string.Empty;
     private string repoName = string.Empty;
     private string branch = "main";
+    private string targetBranch = "main";
     private string token = string.Empty;
+    private bool? needsPrToMerge;
 
     private bool SaveDisabled => string.IsNullOrWhiteSpace(owner) || string.IsNullOrWhiteSpace(repoName) || string.IsNullOrWhiteSpace(token);
 
@@ -36,8 +43,10 @@
             Owner = owner,
             RepoName = repoName,
             Branch = branch,
+            TargetBranch = targetBranch,
             Token = token,
-            Name = repoName
+            Name = repoName,
+            NeedsPrToMerge = needsPrToMerge
         };
 
         MudDialog.Close(DialogResult.Ok(repo));
