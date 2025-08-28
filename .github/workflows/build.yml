@@ -23,3 +23,28 @@ jobs:
         run: dotnet build --no-restore
       - name: Test
         run: dotnet test --no-build --verbosity normal
+      - name: Publish Free Site
+        run: dotnet publish Omny.Cms.Ui -c Release -p:FreeVersion=true -o ./publish/ui-free
+      - name: Sanitize branch name
+        id: branch
+        run: |
+          BRANCH_NAME="${GITHUB_REF_NAME//\//-}"
+          echo "branch=$BRANCH_NAME" >> "$GITHUB_OUTPUT"
+
+      - name: Deploy to Cloudflare Workers (main)
+        if: github.ref_name == 'main'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: 4.26.0
+          command: versions upload
+
+      - name: Deploy to Cloudflare Workers (preview)
+        if: github.ref_name != 'main'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: 4.26.0
+          command: versions upload --preview-alias ${{ github.head_ref || github.ref_name }}
