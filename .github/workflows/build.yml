@@ -39,8 +39,9 @@ jobs:
       - name: Sanitize branch name
         id: branch
         run: |
-          BRANCH_NAME="${GITHUB_REF_NAME//\//-}"
-          echo "branch=$BRANCH_NAME" >> "$GITHUB_OUTPUT"
+          RAW_NAME="${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}"
+          SAFE_NAME="${RAW_NAME//\//-}"
+          echo "branch=$SAFE_NAME" >> "$GITHUB_OUTPUT"
 
       - name: Deploy to Cloudflare Workers (main)
         if: github.ref_name == 'main'
