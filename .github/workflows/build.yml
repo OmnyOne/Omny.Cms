@@ -35,7 +35,7 @@ jobs:
         working-directory: js-plugins
         run: npm run build
       - name: Publish Free Site
-        run: dotnet publish Omny.Cms.Ui -c Release -p:FreeVersion=true -o ./publish/ui-free
+        run: dotnet publish Omny.Cms.Ui -c Release-Free -o ./publish/ui-free
       - name: Sanitize branch name
         id: branch
         run: |
