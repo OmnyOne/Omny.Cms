@@ -6,9 +6,24 @@
 <div class="repository-selector">
 @if (IsFreeVersion)
 {
+    if (currentRepository?.NeedsPrToMerge == false)
+    {
+        <button class="update-link" @onclick="Deploy" disabled="@BuildWatcher.IsUpdating">Deploy</button>
+    }
+    else if (currentRepository?.NeedsPrToMerge == true)
+    {
+        if (string.IsNullOrEmpty(DeploymentRequestUrl))
+        {
+            <button class="update-link" @onclick="RequestDeployment" disabled="@BuildWatcher.IsUpdating">Request Deployment</button>
+        }
+        else
+        {
+            <a class="update-link" href="@DeploymentRequestUrl" target="_blank">View Deployment Request</a>
+        }
+    }
     if (currentRepository?.HasWorkflowDispatch == true)
     {
-        <button class="update-link" @onclick="TriggerUpdate" disabled="@BuildWatcher.IsUpdating">Update Site</button>
+        <button class="update-link" @onclick="TriggerUpdate" disabled="@BuildWatcher.IsUpdating">Update Preview</button>
     }
     <label for="repository-dropdown">Site:</label>
     <select id="repository-dropdown" @onchange="OnRepositoryChanged" value="@GetCurrentRepositoryId()">
@@ -25,27 +40,27 @@
     {
         <a class="preview-link" href="@currentRepository.PreviewUrl" target="_blank">See Preview</a>
     }
-    @if (currentRepository?.NeedsPrToMerge == false)
+}
+else
+{
+    if (currentRepository?.NeedsPrToMerge == false)
     {
-        <button class="update-link" @onclick="Deploy">Deploy</button>
+        <button class="update-link" @onclick="Deploy" disabled="@BuildWatcher.IsUpdating">Deploy</button>
     }
     else if (currentRepository?.NeedsPrToMerge == true)
     {
         if (string.IsNullOrEmpty(DeploymentRequestUrl))
         {
-            <button class="update-link" @onclick="RequestDeployment">Request Deployment</button>
+            <button class="update-link" @onclick="RequestDeployment" disabled="@BuildWatcher.IsUpdating">Request Deployment</button>
         }
         else
         {
             <a class="update-link" href="@DeploymentRequestUrl" target="_blank">View Deployment Request</a>
         }
     }
-}
-else
-{
     if (currentRepository?.HasWorkflowDispatch == true)
     {
-        <button class="update-link" @onclick="TriggerUpdate" disabled="@BuildWatcher.IsUpdating">Update Site</button>
+        <button class="update-link" @onclick="TriggerUpdate" disabled="@BuildWatcher.IsUpdating">Update Preview</button>
     }
     <label for="repository-dropdown">Site:</label>
     <select id="repository-dropdown" @onchange="OnRepositoryChanged" value="@GetCurrentRepositoryId()">
@@ -60,21 +75,6 @@ else
     @if (currentRepository?.PreviewUrl != null)
     {
         <a class="preview-link" href="@currentRepository.PreviewUrl" target="_blank">See Preview</a>
-    }
-    @if (currentRepository?.NeedsPrToMerge == false)
-    {
-        <button class="update-link" @onclick="Deploy">Deploy</button>
-    }
-    else if (currentRepository?.NeedsPrToMerge == true)
-    {
-        if (string.IsNullOrEmpty(DeploymentRequestUrl))
-        {
-            <button class="update-link" @onclick="RequestDeployment">Request Deployment</button>
-        }
-        else
-        {
-            <a class="update-link" href="@DeploymentRequestUrl" target="_blank">View Deployment Request</a>
-        }
     }
 }
 </div>

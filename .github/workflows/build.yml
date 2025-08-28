@@ -39,8 +39,10 @@ jobs:
       - name: Sanitize branch name
         id: branch
         run: |
-          BRANCH_NAME="${GITHUB_REF_NAME//\//-}"
-          echo "branch=$BRANCH_NAME" >> "$GITHUB_OUTPUT"
+          RAW_NAME="${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}"
+          SAFE_NAME="${RAW_NAME//\//-}"
+          TRIMMED_NAME=$(echo "$SAFE_NAME" | cut -c1-15)
+          echo "branch=$TRIMMED_NAME" >> "$GITHUB_OUTPUT"
 
       - name: Deploy to Cloudflare Workers (main)
         if: github.ref_name == 'main'
@@ -58,4 +60,4 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           wranglerVersion: 4.26.0
-          command: versions upload --preview-alias ${{ github.head_ref || github.ref_name }}
+          command: versions upload --preview-alias ${{ steps.branch.outputs.branch }}

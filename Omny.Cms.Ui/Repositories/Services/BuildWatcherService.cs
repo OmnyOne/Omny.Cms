@@ -19,6 +19,8 @@ namespace Omny.Cms.UiRepositories.Services
         private RepositoryInfo? _repo;
         private WorkflowRun? _latestRun;
         private DateTimeOffset? _completedAt;
+        private string _branch = string.Empty;
+        private string _operationName = string.Empty;
 
         public event Action? BuildCompleted;
 
@@ -36,7 +38,7 @@ namespace Omny.Cms.UiRepositories.Services
             _repositoryManager = repositoryManager;
         }
 
-        public async Task StartWatchingAsync()
+        public async Task StartWatchingAsync(bool useTargetBranch = false, string? operationName = null)
         {
             _repo = await _repositoryManager.GetCurrentRepositoryAsync();
             if (_repo == null || _repo.UseApiFileService || string.IsNullOrWhiteSpace(_repo.BuildActionsToWatch))
@@ -46,16 +48,17 @@ namespace Omny.Cms.UiRepositories.Services
 
             _actions = _repo.BuildActionsToWatch == "*" ? null :
                 _repo.BuildActionsToWatch.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-            var client = await _gitHubClientProvider.GetClientAsync();
-
+            await _gitHubClientProvider.GetClientAsync();
             await _gitHubClientProvider.GetRepositoryAsync();
-            //_lastCommitSha = await _gitHubClientProvider.GetBranchShaAsync(true);
-            
+
+            _branch = useTargetBranch ? _repo.TargetBranch : _repo.Branch;
+            _operationName = operationName ?? (useTargetBranch ? "Deployment" : "Update Preview");
+
             _startTime = DateTimeOffset.UtcNow;
             _completedAt = null;
             _latestRun = null;
             _timer?.Dispose();
-            Status = "Watching for changes";
+            Status = $"Watching {_operationName}";
             IsUpdating = true;
             StatusChanged?.Invoke();
             _timer = new Timer(async _ => await CheckAsync(), null, TimeSpan.Zero, TimeSpan.FromSeconds(3));
@@ -75,7 +78,7 @@ namespace Omny.Cms.UiRepositories.Services
             if (workflow != null)
             {
                 await client.Actions.Workflows.CreateDispatch(_repo.Owner, _repo.RepoName, workflow.Id, new CreateWorkflowDispatch(_repo.Branch));
-                await StartWatchingAsync();
+                await StartWatchingAsync(false, "Update Preview");
             }
         }
 
@@ -89,7 +92,7 @@ namespace Omny.Cms.UiRepositories.Services
             try
             {
                 var client = await _gitHubClientProvider.GetClientAsync();
-                string headSha = await _gitHubClientProvider.GetBranchShaAsync(true);
+                string headSha = await _gitHubClientProvider.GetBranchShaAsync(_branch, true);
                 var request = new WorkflowRunsRequest
                 {
                     HeadSha = headSha
@@ -101,8 +104,8 @@ namespace Omny.Cms.UiRepositories.Services
                     .OrderByDescending(r => r.CreatedAt)
                     .FirstOrDefault(r => _actions == null || _actions.Contains(r.Name, StringComparer.OrdinalIgnoreCase));
 
-                const string updateCompleted = "Update Completed";
-                const string updateFailed = "Update Failed";
+                string updateCompleted = $"{_operationName} Completed";
+                string updateFailed = $"{_operationName} Failed";
                 if (run != null)
                 {
                     _latestRun = run;
@@ -137,8 +140,7 @@ namespace Omny.Cms.UiRepositories.Services
                     }
                     else
                     {
-                        const string updatingSite = "Updating Site";
-
+                        string updatingSite = $"{_operationName} Running";
                         Status = updatingSite;
                         _completedAt = null;
                         IsUpdating = true;
@@ -193,6 +195,8 @@ namespace Omny.Cms.UiRepositories.Services
             CurrentBuildUrl = null;
             Status = string.Empty;
             IsUpdating = false;
+            _branch = string.Empty;
+            _operationName = string.Empty;
         }
 
         public void Dispose()

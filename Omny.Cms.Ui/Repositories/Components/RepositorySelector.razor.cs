@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Components;
 using Omny.Cms.UiRepositories.Models;
 using Omny.Cms.UiRepositories.Services;
 using MudBlazor;
+using System;
 
 namespace Omny.Cms.UiRepositories.Components;
 
@@ -72,13 +73,19 @@ public class RepositorySelectorBase : ComponentBase, IDisposable
         {
             if (BuildWatcher.Status != _lastStatus && !string.IsNullOrEmpty(BuildWatcher.Status))
             {
-                var severity = BuildWatcher.Status switch
+                Severity severity;
+                if (BuildWatcher.Status.EndsWith("Completed", StringComparison.OrdinalIgnoreCase))
                 {
-                    "Update Completed" => Severity.Success,
-                    "Update Failed" => Severity.Error,
-                    "Updating Site" => Severity.Info,
-                    _ => Severity.Info
-                };
+                    severity = Severity.Success;
+                }
+                else if (BuildWatcher.Status.EndsWith("Failed", StringComparison.OrdinalIgnoreCase))
+                {
+                    severity = Severity.Error;
+                }
+                else
+                {
+                    severity = Severity.Info;
+                }
                 Snackbar.Add(BuildWatcher.Status, severity, options =>
                 {
                     if (BuildWatcher.CurrentBuildUrl != null)
@@ -150,6 +157,7 @@ public class RepositorySelectorBase : ComponentBase, IDisposable
     protected async Task Deploy()
     {
         await DeploymentService.MergeAsync();
+        await BuildWatcher.StartWatchingAsync(true, "Deployment");
     }
 
     protected async Task RequestDeployment()
