@@ -8,6 +8,7 @@ namespace Omny.Cms.UiRepositories.Files.GitHub
         Task<GitHubClient> GetClientAsync();
         Task<Repository> GetRepositoryAsync();
         Task<string> GetBranchShaAsync(bool refresh = false);
+        Task<string> GetBranchShaAsync(string branch, bool refresh = false);
         Task UpdateCachedBranchShaAsync(string sha);
     }
 }

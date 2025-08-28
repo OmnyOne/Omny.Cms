@@ -5,6 +5,7 @@ using Octokit;
 using Octokit.Caching;
 using Octokit.Internal;
 using Omny.Cms.UiRepositories.Services;
+using Omny.Cms.UiRepositories.Models;
 
 namespace Omny.Cms.UiRepositories.Files.GitHub;
 
@@ -74,13 +75,25 @@ public class GitHubClientProvider : IGitHubClientProvider
 
     public async Task<string> GetBranchShaAsync(bool refresh = false)
     {
-        var repo = await _repositoryManager.GetCurrentRepositoryAsync();
+        RepositoryInfo? repo = await _repositoryManager.GetCurrentRepositoryAsync();
         if (repo == null)
         {
             return string.Empty;
         }
 
-        string key = $"{repo.Owner}/{repo.RepoName}/{repo.Branch}";
+        string result = await GetBranchShaAsync(repo.Branch, refresh);
+        return result;
+    }
+
+    public async Task<string> GetBranchShaAsync(string branch, bool refresh = false)
+    {
+        RepositoryInfo? repo = await _repositoryManager.GetCurrentRepositoryAsync();
+        if (repo == null)
+        {
+            return string.Empty;
+        }
+
+        string key = $"{repo.Owner}/{repo.RepoName}/{branch}";
         if (!refresh && _shaCache.TryGetValue(key, out string sha))
         {
             return sha;
@@ -88,10 +101,10 @@ public class GitHubClientProvider : IGitHubClientProvider
 
         var client = await GetClientAsync();
         Repository repository = await GetRepositoryAsync();
-        var reference = await client.Git.Reference.Get(repository.Id, $"heads/{repo.Branch}");
-        sha = reference.Object.Sha;
-        _shaCache[key] = sha;
-        return sha;
+        Reference reference = await client.Git.Reference.Get(repository.Id, $"heads/{branch}");
+        string resultSha = reference.Object.Sha;
+        _shaCache[key] = resultSha;
+        return resultSha;
     }
 
     public async Task UpdateCachedBranchShaAsync(string sha)
