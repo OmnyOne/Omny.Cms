@@ -3,5 +3,5 @@ compatibility_date = "2024-09-25"
 preview_urls = true
 
 [assets]
-directory = "./publish/ui-free"
+directory = "./publish/ui-free/www-root/"
 not_found_handling = "single-page-application"
