@@ -9,22 +9,22 @@
 {
     if (currentRepository?.NeedsPrToMerge == false)
     {
-        <MudButton Class="update-link" OnClick="Deploy" Disabled="@BuildWatcher.IsUpdating">Deploy</MudButton>
+        <MudButton Class="update-link" OnClick="Deploy" Disabled="@BuildWatcher.IsUpdating" Variant="Variant.Filled">Deploy</MudButton>
     }
     else if (currentRepository?.NeedsPrToMerge == true)
     {
         if (string.IsNullOrEmpty(DeploymentRequestUrl))
         {
-            <MudButton Class="update-link" OnClick="RequestDeployment" Disabled="@BuildWatcher.IsUpdating">Request Deployment</MudButton>
+            <MudButton Class="update-link" OnClick="RequestDeployment" Disabled="@BuildWatcher.IsUpdating" Variant="Variant.Filled">Request Deployment</MudButton>
         }
         else
         {
-            <MudButton Class="update-link" Href="@DeploymentRequestUrl" Target="_blank">View Deployment Request</MudButton>
+            <MudButton Class="update-link" Href="@DeploymentRequestUrl" Target="_blank" Variant="Variant.Filled">View Deployment Request</MudButton>
         }
     }
     if (currentRepository?.HasWorkflowDispatch == true)
     {
-        <MudButton Class="update-link" OnClick="TriggerUpdate" Disabled="@BuildWatcher.IsUpdating">Update Preview</MudButton>
+        <MudButton Class="update-link" OnClick="TriggerUpdate" Disabled="@BuildWatcher.IsUpdating" Variant="Variant.Filled">Update Preview</MudButton>
     }
     <MudSelect T="string" Value="selectedRepositoryId" ValueChanged="OnRepositoryChanged" Label="Site" Disabled="@BuildWatcher.IsUpdating" Class="repository-dropdown">
         @if (repositories != null)
@@ -35,32 +35,32 @@
             }
         }
     </MudSelect>
-    <MudButton Class="add-repo" OnClick="OpenAddRepositoryDialogAsync" Disabled="@BuildWatcher.IsUpdating">+</MudButton>
+    <MudButton Class="add-repo" OnClick="OpenAddRepositoryDialogAsync" Disabled="@BuildWatcher.IsUpdating" Variant="Variant.Filled">+</MudButton>
     @if (currentRepository?.PreviewUrl != null)
     {
-        <MudButton Class="preview-link" Href="@currentRepository.PreviewUrl" Target="_blank">See Preview</MudButton>
+        <MudButton Class="preview-link" Href="@currentRepository.PreviewUrl" Target="_blank" Variant="Variant.Filled">See Preview</MudButton>
     }
 }
 else
 {
     if (currentRepository?.NeedsPrToMerge == false)
     {
-        <MudButton Class="update-link" OnClick="Deploy" Disabled="@BuildWatcher.IsUpdating">Deploy</MudButton>
+        <MudButton Class="update-link" OnClick="Deploy" Disabled="@BuildWatcher.IsUpdating" Variant="Variant.Filled">Deploy</MudButton>
     }
     else if (currentRepository?.NeedsPrToMerge == true)
     {
         if (string.IsNullOrEmpty(DeploymentRequestUrl))
         {
-            <MudButton Class="update-link" OnClick="RequestDeployment" Disabled="@BuildWatcher.IsUpdating">Request Deployment</MudButton>
+            <MudButton Class="update-link" OnClick="RequestDeployment" Disabled="@BuildWatcher.IsUpdating" Variant="Variant.Filled">Request Deployment</MudButton>
         }
         else
         {
-            <MudButton Class="update-link" Href="@DeploymentRequestUrl" Target="_blank">View Deployment Request</MudButton>
+            <MudButton Class="update-link" Href="@DeploymentRequestUrl" Target="_blank" Variant="Variant.Filled">View Deployment Request</MudButton>
         }
     }
     if (currentRepository?.HasWorkflowDispatch == true)
     {
-        <MudButton Class="update-link" OnClick="TriggerUpdate" Disabled="@BuildWatcher.IsUpdating">Update Preview</MudButton>
+        <MudButton Class="update-link" OnClick="TriggerUpdate" Disabled="@BuildWatcher.IsUpdating" Variant="Variant.Filled">Update Preview</MudButton>
     }
     <MudSelect T="string" Value="selectedRepositoryId" ValueChanged="OnRepositoryChanged" Label="Site" Disabled="@BuildWatcher.IsUpdating" Class="repository-dropdown">
         @if (repositories != null)
@@ -73,7 +73,7 @@ else
     </MudSelect>
     @if (currentRepository?.PreviewUrl != null)
     {
-        <MudButton Class="preview-link" Href="@currentRepository.PreviewUrl" Target="_blank">See Preview</MudButton>
+        <MudButton Class="preview-link" Href="@currentRepository.PreviewUrl" Target="_blank" Variant="Variant.Filled">See Preview</MudButton>
     }
 }
 </div>

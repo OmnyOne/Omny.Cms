@@ -17,14 +17,14 @@
                 @{
                     var index = i;
                 }
-                <MudButton ButtonType="ButtonType.Button" OnClick="(() => Remove(index))">Remove</MudButton>
+                <MudButton ButtonType="ButtonType.Button" OnClick="(() => Remove(index))" Variant="Variant.Filled">Remove</MudButton>
             </div>
         }
         <div class="add-buttons">
             @foreach (var t in _allowed)
             {
                 var plugin = PluginRegistry.GetFieldPlugin(t);
-                <MudButton ButtonType="ButtonType.Button" Class="add-field" OnClick="(() => Add(t))">
+                <MudButton ButtonType="ButtonType.Button" Class="add-field" OnClick="(() => Add(t))" Variant="Variant.Filled">
                     <span class="icon">@plugin.Icon</span> Add @plugin.DisplayName
                 </MudButton>
             }
