@@ -18,7 +18,7 @@
 
         <article class="content px-4">
             @* Required *@
-            <MudThemeProvider />
+            <MudThemeProvider @ref="_mudThemeProvider" @bind-IsDarkMode="_isDarkMode" />
             <MudPopoverProvider />
 
             @* Needed for dialogs *@

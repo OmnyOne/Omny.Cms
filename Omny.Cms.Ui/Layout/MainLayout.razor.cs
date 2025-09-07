@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using Octokit.Internal;
 using Omny.Cms.Ui.Authentication;
+using MudBlazor;
 
 namespace Omny.Cms.UiLayout;
 
@@ -14,6 +15,8 @@ public class MainLayoutBase : LayoutComponentBase
     [Inject] private CsrfTokenProvider? CsrfTokenProvider { get; set; }
 
     protected bool Loaded = false;
+    protected MudThemeProvider? _mudThemeProvider;
+    protected bool _isDarkMode;
 
     protected override async Task OnInitializedAsync()
     {
@@ -48,6 +51,16 @@ public class MainLayoutBase : LayoutComponentBase
 #else
         NavigationManager!.NavigateTo("/Account/Logout", forceLoad: true);
 #endif
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        if (firstRender && _mudThemeProvider != null)
+        {
+            _isDarkMode = await _mudThemeProvider.GetSystemDarkModeAsync();
+            StateHasChanged();
+        }
     }
 }
 
