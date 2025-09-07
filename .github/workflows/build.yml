@@ -1,4 +1,4 @@
-name: Build
+name: Test
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
     branches: [ main ]
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -34,30 +34,3 @@ jobs:
       - name: Build JS plugins
         working-directory: js-plugins
         run: npm run build
-      - name: Publish Free Site
-        run: dotnet publish Omny.Cms.Ui -c Release-Free -o ./publish/ui-free
-      - name: Sanitize branch name
-        id: branch
-        run: |
-          RAW_NAME="${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}"
-          SAFE_NAME="${RAW_NAME//\//-}"
-          TRIMMED_NAME=$(echo "$SAFE_NAME" | cut -c1-15)
-          echo "branch=$TRIMMED_NAME" >> "$GITHUB_OUTPUT"
-
-      - name: Deploy to Cloudflare Workers (main)
-        if: github.ref_name == 'main'
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          wranglerVersion: 4.26.0
-          command: deploy
-
-      - name: Deploy to Cloudflare Workers (preview)
-        if: github.ref_name != 'main'
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          wranglerVersion: 4.26.0
-          command: versions upload --preview-alias ${{ steps.branch.outputs.branch }}
