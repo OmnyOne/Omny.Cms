@@ -39,7 +39,9 @@ jobs:
           RAW_NAME="${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}"
           SAFE_NAME="${RAW_NAME//\//-}"
           TRIMMED_NAME=$(echo "$SAFE_NAME" | cut -c1-15)
-          echo "branch=$TRIMMED_NAME" >> "$GITHUB_OUTPUT"
+          CLEAN_NAME=$(echo "$TRIMMED_NAME" | sed 's/-$//')
+          echo "branch=$CLEAN_NAME" >> "$GITHUB_OUTPUT"
+
 
       - name: Deploy to Cloudflare Workers (main)
         if: github.ref_name == 'main'
