@@ -3,32 +3,34 @@
 @using Omny.Cms.UiRepositories.Components
 @using MudBlazor
 <div class="page">
+    <MudThemeProvider @ref="_mudThemeProvider" @bind-IsDarkMode="_isDarkMode" />
     <!--<div class="sidebar">
         <NavMenu/>
     </div>-->
 
-    @if(Loaded) {
-    <main>
-        <div class="top-row px-4">
-            <div class="top-row-content">
-                <RepositorySelector />
-                <MudButton OnClick="Logout" Variant="Variant.Filled">Logout</MudButton>
+    @if (Loaded)
+    {
+        <main>
+            <div class="top-row px-4">
+                <div class="top-row-content">
+                    <RepositorySelector/>
+                    <MudButton OnClick="Logout" Variant="Variant.Filled">Logout</MudButton>
+                </div>
             </div>
-        </div>
 
-        <article class="content px-4">
-            @* Required *@
-            <MudThemeProvider @ref="_mudThemeProvider" @bind-IsDarkMode="_isDarkMode" />
-            <MudPopoverProvider />
+            <article class="content px-4">
+                @* Required *@
 
-            @* Needed for dialogs *@
-            <MudDialogProvider />
+                <MudPopoverProvider/>
 
-            @* Needed for snackbars *@
-            <MudSnackbarProvider />
-            @Body
-        </article>
-    </main>
+                @* Needed for dialogs *@
+                <MudDialogProvider/>
+
+                @* Needed for snackbars *@
+                <MudSnackbarProvider/>
+                @Body
+            </article>
+        </main>
     }
 </div>
 

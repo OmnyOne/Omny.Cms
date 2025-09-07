@@ -8,7 +8,6 @@
     width: 260px;
     min-width: 200px;
     max-width: 320px;
-    background: #f7f7f7;
     border-right: 1px solid #e0e0e0;
     padding: 1rem;
     overflow-y: auto;
@@ -18,7 +17,6 @@
     flex: 1 1 0%;
     padding: 2rem;
     overflow-y: auto;
-    background: #fff;
 }
 
 .editor-sidebar button {
@@ -54,7 +52,6 @@
 }
 
 .image-dialog {
-    background: #fff;
     padding: 1rem;
     width: 100vw;
     height: 100vh;
@@ -102,7 +99,6 @@
 .add-field {
     margin-right: 0.5rem;
     padding: 0.25rem 0.5rem;
-    background: #f0f0f0;
     border: 1px solid #ccc;
     border-radius: 4px;
     cursor: pointer;
