@@ -69,7 +69,7 @@ public class ImageSelectorBase : ComponentBase
         Uploading = true;
         StateHasChanged();
         await EditorService.UploadImageAsync(name, bytes.ToArray());
-        await BuildWatcher.StartWatchingAsync();
+        await BuildWatcher.StartWatchingAsync(quiet: true);
         MudDialog.Close(DialogResult.Ok(name));
         Uploading = false;
         StateHasChanged();

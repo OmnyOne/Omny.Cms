@@ -21,6 +21,7 @@ namespace Omny.Cms.UiRepositories.Services
         private DateTimeOffset? _completedAt;
         private string _branch = string.Empty;
         private string _operationName = string.Empty;
+        private bool _quiet;
 
         public event Action? BuildCompleted;
 
@@ -38,7 +39,7 @@ namespace Omny.Cms.UiRepositories.Services
             _repositoryManager = repositoryManager;
         }
 
-        public async Task StartWatchingAsync(bool useTargetBranch = false, string? operationName = null)
+        public async Task StartWatchingAsync(bool useTargetBranch = false, string? operationName = null, bool quiet = false)
         {
             _repo = await _repositoryManager.GetCurrentRepositoryAsync();
             if (_repo == null || _repo.UseApiFileService || string.IsNullOrWhiteSpace(_repo.BuildActionsToWatch))
@@ -58,9 +59,22 @@ namespace Omny.Cms.UiRepositories.Services
             _completedAt = null;
             _latestRun = null;
             _timer?.Dispose();
-            Status = $"Watching {_operationName}";
-            IsUpdating = true;
-            StatusChanged?.Invoke();
+            _quiet = quiet;
+            if (!quiet)
+            {
+                string statusMessage;
+                if (string.Equals(_operationName, "Update Preview", StringComparison.OrdinalIgnoreCase))
+                {
+                    statusMessage = "Checking for preview build...";
+                }
+                else
+                {
+                    statusMessage = $"Checking for {_operationName.ToLowerInvariant()}...";
+                }
+                Status = statusMessage;
+                IsUpdating = true;
+                StatusChanged?.Invoke();
+            }
             _timer = new Timer(async _ => await CheckAsync(), null, TimeSpan.Zero, TimeSpan.FromSeconds(3));
         }
 
@@ -106,8 +120,19 @@ namespace Omny.Cms.UiRepositories.Services
 
                 string updateCompleted = $"{_operationName} Completed";
                 string updateFailed = $"{_operationName} Failed";
+                if (_quiet && run == null)
+                {
+                    TimeSpan elapsed = DateTimeOffset.UtcNow - _startTime;
+                    if (elapsed > TimeSpan.FromSeconds(30))
+                    {
+                        Clear();
+                    }
+                    return;
+                }
+
                 if (run != null)
                 {
+                    _quiet = false;
                     _latestRun = run;
                     CurrentBuildUrl = run.HtmlUrl;
                     if (run.Status == WorkflowRunStatus.Completed)
@@ -197,6 +222,7 @@ namespace Omny.Cms.UiRepositories.Services
             IsUpdating = false;
             _branch = string.Empty;
             _operationName = string.Empty;
+            _quiet = false;
         }
 
         public void Dispose()
