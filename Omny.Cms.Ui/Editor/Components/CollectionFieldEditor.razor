@@ -1,6 +1,7 @@
 @namespace Omny.Cms.UiEditor.Components
 @inherits CollectionFieldEditorBase
 @using Omny.Cms.Editor
+@using MudBlazor
 
 <div class="collection-field">
     @if (_items is not null)
@@ -16,16 +17,16 @@
                 @{
                     var index = i;
                 }
-                <button type="button" @onclick="(() => Remove(index))">Remove</button>
+                <MudButton ButtonType="ButtonType.Button" OnClick="(() => Remove(index))">Remove</MudButton>
             </div>
         }
         <div class="add-buttons">
             @foreach (var t in _allowed)
             {
                 var plugin = PluginRegistry.GetFieldPlugin(t);
-                <button type="button" class="add-field" @onclick="(() => Add(t))">
+                <MudButton ButtonType="ButtonType.Button" Class="add-field" OnClick="(() => Add(t))">
                     <span class="icon">@plugin.Icon</span> Add @plugin.DisplayName
-                </button>
+                </MudButton>
             }
         </div>
     }

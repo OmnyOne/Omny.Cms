@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 using Omny.Cms.UiRepositories.Models;
 using Omny.Cms.UiRepositories.Services;
 using MudBlazor;
@@ -14,9 +15,11 @@ public class RepositorySelectorBase : ComponentBase, IDisposable
     [Inject] protected ISnackbar Snackbar { get; set; } = default!;
     [Inject] protected IDialogService DialogService { get; set; } = default!;
     [Inject] protected DeploymentService DeploymentService { get; set; } = default!;
+    [Inject] protected IJSRuntime JS { get; set; } = default!;
 
     protected List<RepositoryInfo>? repositories;
     protected RepositoryInfo? currentRepository;
+    protected string? selectedRepositoryId;
     protected string? DeploymentRequestUrl;
     private string? _lastStatus;
 
@@ -36,6 +39,7 @@ public class RepositorySelectorBase : ComponentBase, IDisposable
         repositories = await RepositoryManager.GetRepositoriesAsync();
         currentRepository = await RepositoryManager.GetCurrentRepositoryAsync();
 #endif
+        selectedRepositoryId = GetCurrentRepositoryId();
         RepositoryManager.CurrentRepositoryChanged += OnCurrentRepositoryChanged;
         BuildWatcher.StatusChanged += OnBuildStatusChanged;
         await RefreshDeploymentStatusAsync();
@@ -63,6 +67,7 @@ public class RepositorySelectorBase : ComponentBase, IDisposable
     protected async void OnCurrentRepositoryChanged(RepositoryInfo repository)
     {
         currentRepository = repository;
+        selectedRepositoryId = GetRepositoryId(repository);
         await RefreshDeploymentStatusAsync();
         InvokeAsync(StateHasChanged);
     }
@@ -86,6 +91,7 @@ public class RepositorySelectorBase : ComponentBase, IDisposable
                 {
                     severity = Severity.Info;
                 }
+                Snackbar.Clear();
                 Snackbar.Add(BuildWatcher.Status, severity, options =>
                 {
                     if (BuildWatcher.CurrentBuildUrl != null)
@@ -94,9 +100,14 @@ public class RepositorySelectorBase : ComponentBase, IDisposable
                         var url = BuildWatcher.CurrentBuildUrl;
                         options.OnClick = _ =>
                         {
-                            NavigationManager.NavigateTo(url, true);
+                            JS.InvokeVoidAsync("open", url, "_blank");
                             return Task.CompletedTask;
                         };
+                    }
+                    options.RequireInteraction = BuildWatcher.IsUpdating;
+                    if (BuildWatcher.IsUpdating)
+                    {
+                        options.VisibleStateDuration = int.MaxValue;
                     }
                 });
                 _lastStatus = BuildWatcher.Status;
@@ -105,14 +116,14 @@ public class RepositorySelectorBase : ComponentBase, IDisposable
         });
     }
 
-    protected async Task OnRepositoryChanged(ChangeEventArgs e)
+    protected async Task OnRepositoryChanged(string? selectedId)
     {
-        var selectedId = e.Value?.ToString();
         if (string.IsNullOrEmpty(selectedId) || repositories == null)
         {
             return;
         }
 
+        selectedRepositoryId = selectedId;
         var selectedRepo = repositories.FirstOrDefault(r => GetRepositoryId(r) == selectedId);
         if (selectedRepo != null)
         {
@@ -145,6 +156,7 @@ public class RepositorySelectorBase : ComponentBase, IDisposable
             await RepositoryManager.AddRepositoryAsync(repo);
             repositories = await RepositoryManager.GetRepositoriesAsync();
             currentRepository = repo;
+            selectedRepositoryId = GetRepositoryId(repo);
             StateHasChanged();
         }
     }

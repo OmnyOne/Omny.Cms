@@ -2,79 +2,78 @@
 @inherits RepositorySelectorBase
 @using Omny.Cms.UiRepositories.Models
 @using Omny.Cms.UiRepositories.Services
+@using MudBlazor
 
 <div class="repository-selector">
 @if (IsFreeVersion)
 {
     if (currentRepository?.NeedsPrToMerge == false)
     {
-        <button class="update-link" @onclick="Deploy" disabled="@BuildWatcher.IsUpdating">Deploy</button>
+        <MudButton Class="update-link" OnClick="Deploy" Disabled="@BuildWatcher.IsUpdating">Deploy</MudButton>
     }
     else if (currentRepository?.NeedsPrToMerge == true)
     {
         if (string.IsNullOrEmpty(DeploymentRequestUrl))
         {
-            <button class="update-link" @onclick="RequestDeployment" disabled="@BuildWatcher.IsUpdating">Request Deployment</button>
+            <MudButton Class="update-link" OnClick="RequestDeployment" Disabled="@BuildWatcher.IsUpdating">Request Deployment</MudButton>
         }
         else
         {
-            <a class="update-link" href="@DeploymentRequestUrl" target="_blank">View Deployment Request</a>
+            <MudButton Class="update-link" Href="@DeploymentRequestUrl" Target="_blank">View Deployment Request</MudButton>
         }
     }
     if (currentRepository?.HasWorkflowDispatch == true)
     {
-        <button class="update-link" @onclick="TriggerUpdate" disabled="@BuildWatcher.IsUpdating">Update Preview</button>
+        <MudButton Class="update-link" OnClick="TriggerUpdate" Disabled="@BuildWatcher.IsUpdating">Update Preview</MudButton>
     }
-    <label for="repository-dropdown">Site:</label>
-    <select id="repository-dropdown" @onchange="OnRepositoryChanged" value="@GetCurrentRepositoryId()">
+    <MudSelect T="string" Value="selectedRepositoryId" ValueChanged="OnRepositoryChanged" Label="Site" Disabled="@BuildWatcher.IsUpdating" Class="repository-dropdown">
         @if (repositories != null)
         {
             foreach (var repo in repositories)
             {
-                <option value="@GetRepositoryId(repo)">@repo.Name</option>
+                <MudSelectItem Value="@GetRepositoryId(repo)">@repo.Name</MudSelectItem>
             }
         }
-    </select>
-    <button class="add-repo" @onclick="OpenAddRepositoryDialogAsync">+</button>
+    </MudSelect>
+    <MudButton Class="add-repo" OnClick="OpenAddRepositoryDialogAsync" Disabled="@BuildWatcher.IsUpdating">+</MudButton>
     @if (currentRepository?.PreviewUrl != null)
     {
-        <a class="preview-link" href="@currentRepository.PreviewUrl" target="_blank">See Preview</a>
+        <MudButton Class="preview-link" Href="@currentRepository.PreviewUrl" Target="_blank">See Preview</MudButton>
     }
 }
 else
 {
     if (currentRepository?.NeedsPrToMerge == false)
     {
-        <button class="update-link" @onclick="Deploy" disabled="@BuildWatcher.IsUpdating">Deploy</button>
+        <MudButton Class="update-link" OnClick="Deploy" Disabled="@BuildWatcher.IsUpdating">Deploy</MudButton>
     }
     else if (currentRepository?.NeedsPrToMerge == true)
     {
         if (string.IsNullOrEmpty(DeploymentRequestUrl))
         {
-            <button class="update-link" @onclick="RequestDeployment" disabled="@BuildWatcher.IsUpdating">Request Deployment</button>
+            <MudButton Class="update-link" OnClick="RequestDeployment" Disabled="@BuildWatcher.IsUpdating">Request Deployment</MudButton>
         }
         else
         {
-            <a class="update-link" href="@DeploymentRequestUrl" target="_blank">View Deployment Request</a>
+            <MudButton Class="update-link" Href="@DeploymentRequestUrl" Target="_blank">View Deployment Request</MudButton>
         }
     }
     if (currentRepository?.HasWorkflowDispatch == true)
     {
-        <button class="update-link" @onclick="TriggerUpdate" disabled="@BuildWatcher.IsUpdating">Update Preview</button>
+        <MudButton Class="update-link" OnClick="TriggerUpdate" Disabled="@BuildWatcher.IsUpdating">Update Preview</MudButton>
     }
-    <label for="repository-dropdown">Site:</label>
-    <select id="repository-dropdown" @onchange="OnRepositoryChanged" value="@GetCurrentRepositoryId()">
+    <MudSelect T="string" Value="selectedRepositoryId" ValueChanged="OnRepositoryChanged" Label="Site" Disabled="@BuildWatcher.IsUpdating" Class="repository-dropdown">
         @if (repositories != null)
         {
             foreach (var repo in repositories)
             {
-                <option value="@GetRepositoryId(repo)">@repo.Name</option>
+                <MudSelectItem Value="@GetRepositoryId(repo)">@repo.Name</MudSelectItem>
             }
         }
-    </select>
+    </MudSelect>
     @if (currentRepository?.PreviewUrl != null)
     {
-        <a class="preview-link" href="@currentRepository.PreviewUrl" target="_blank">See Preview</a>
+        <MudButton Class="preview-link" Href="@currentRepository.PreviewUrl" Target="_blank">See Preview</MudButton>
     }
 }
 </div>
@@ -84,47 +83,5 @@ else
         display: flex;
         align-items: center;
         gap: 8px;
-    }
-
-    .repository-selector label {
-        font-weight: 500;
-        color: #333;
-    }
-
-    .repository-selector select {
-        padding: 4px 8px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        background-color: white;
-        color: #333;
-        min-width: 200px;
-    }
-
-    .repository-selector select:focus {
-        outline: none;
-        border-color: #007bff;
-        box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
-    }
-
-    .repository-selector .update-link,
-    .repository-selector .preview-link {
-        padding: 4px 8px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        text-decoration: none;
-        color: #333;
-    }
-
-    .repository-selector .add-repo {
-        padding: 4px 8px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        background-color: #f5f5f5;
-        cursor: pointer;
-    }
-
-    .repository-selector .update-link:hover,
-    .repository-selector .preview-link:hover {
-        text-decoration: underline;
     }
 </style>
