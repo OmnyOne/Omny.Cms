@@ -14,7 +14,7 @@ public class RepositoryManagerService : IRepositoryManagerService, IAdvancedUser
     private readonly NavigationManager _navigationManager;
     private readonly List<RepositoryInfo> _repositories = new();
     private RepositoryInfo? _currentRepository;
-    private bool _repoParamChecked;
+    private bool _repoHashChecked;
     private const string RepositoriesKey = "repositories";
     private const string CurrentRepositoryKey = "current-repository";
 
@@ -26,17 +26,18 @@ public class RepositoryManagerService : IRepositoryManagerService, IAdvancedUser
         _navigationManager = navigationManager;
     }
 
-    private async Task CheckRepoQueryParameterAsync()
+    private async Task CheckRepoHashAsync()
     {
-        if (_repoParamChecked)
+        if (_repoHashChecked)
         {
             return;
         }
 
-        _repoParamChecked = true;
+        _repoHashChecked = true;
 
         var uri = _navigationManager.ToAbsoluteUri(_navigationManager.Uri);
-        var query = QueryHelpers.ParseQuery(uri.Query);
+        var fragment = uri.Fragment.TrimStart('#');
+        var query = QueryHelpers.ParseQuery(fragment);
         if (!query.TryGetValue("repo", out var repoParam))
         {
             return;
@@ -64,6 +65,9 @@ public class RepositoryManagerService : IRepositoryManagerService, IAdvancedUser
             _repositories.Add(repo);
             await _localStorage.SetItemAsync(RepositoriesKey, _repositories);
             await SetCurrentRepositoryAsync(repo);
+
+            string baseUri = uri.GetLeftPart(UriPartial.Path) + uri.Query;
+            _navigationManager.NavigateTo(baseUri, false, true);
         }
         catch
         {
@@ -73,7 +77,7 @@ public class RepositoryManagerService : IRepositoryManagerService, IAdvancedUser
 
     public async Task<List<RepositoryInfo>> GetRepositoriesAsync()
     {
-        await CheckRepoQueryParameterAsync();
+        await CheckRepoHashAsync();
         if (_repositories.Count == 0)
         {
             var stored = await _localStorage.GetItemAsync<List<RepositoryInfo>>(RepositoriesKey);
@@ -88,7 +92,7 @@ public class RepositoryManagerService : IRepositoryManagerService, IAdvancedUser
 
     public async Task<RepositoryInfo?> GetCurrentRepositoryAsync()
     {
-        await CheckRepoQueryParameterAsync();
+        await CheckRepoHashAsync();
         if (_currentRepository == null)
         {
             _currentRepository = await _localStorage.GetItemAsync<RepositoryInfo>(CurrentRepositoryKey);
