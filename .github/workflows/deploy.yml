@@ -1,0 +1,62 @@
+name: Deploy
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup .NET LTS
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Setup .NET recent SDK
+        uses: actions/setup-dotnet@v4
+      - name: Restore dependencies
+        run: dotnet restore
+      - name: Build
+        run: dotnet build --no-restore
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+      - name: Install JS dependencies
+        working-directory: js-plugins
+        run: npm install
+      - name: Build JS plugins
+        working-directory: js-plugins
+        run: npm run build
+      - name: Publish Free Site
+        run: dotnet publish Omny.Cms.Ui -c Release-Free -o ./publish/ui-free
+      - name: Sanitize branch name
+        id: branch
+        run: |
+          RAW_NAME="${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}"
+          SAFE_NAME="${RAW_NAME//\//-}"
+          TRIMMED_NAME=$(echo "$SAFE_NAME" | cut -c1-15)
+          CLEAN_NAME=$(echo "$TRIMMED_NAME" | sed 's/-$//')
+          echo "branch=$CLEAN_NAME" >> "$GITHUB_OUTPUT"
+
+
+      - name: Deploy to Cloudflare Workers (main)
+        if: github.ref_name == 'main'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: 4.26.0
+          command: deploy
+
+      - name: Deploy to Cloudflare Workers (preview)
+        if: github.ref_name != 'main'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: 4.26.0
+          command: versions upload --preview-alias ${{ steps.branch.outputs.branch }}
