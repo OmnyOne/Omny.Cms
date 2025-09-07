@@ -1,6 +1,7 @@
 @namespace Omny.Cms.UiLayout
 @inherits MainLayoutBase
 @using Omny.Cms.UiRepositories.Components
+@using MudBlazor
 <div class="page">
     <!--<div class="sidebar">
         <NavMenu/>
@@ -11,7 +12,7 @@
         <div class="top-row px-4">
             <div class="top-row-content">
                 <RepositorySelector />
-                <button @onclick="Logout">Logout</button>
+                <MudButton OnClick="Logout">Logout</MudButton>
             </div>
         </div>
 
