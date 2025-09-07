@@ -26,7 +26,7 @@
     {
         <MudButton Class="update-link" OnClick="TriggerUpdate" Disabled="@BuildWatcher.IsUpdating">Update Preview</MudButton>
     }
-    <MudSelect T="string" Value="selectedRepositoryId" ValueChanged="OnRepositoryChanged" Label="Site" Disabled="@BuildWatcher.IsUpdating">
+    <MudSelect T="string" Value="selectedRepositoryId" ValueChanged="OnRepositoryChanged" Label="Site" Disabled="@BuildWatcher.IsUpdating" Class="repository-dropdown">
         @if (repositories != null)
         {
             foreach (var repo in repositories)
@@ -62,7 +62,7 @@ else
     {
         <MudButton Class="update-link" OnClick="TriggerUpdate" Disabled="@BuildWatcher.IsUpdating">Update Preview</MudButton>
     }
-    <MudSelect T="string" Value="selectedRepositoryId" ValueChanged="OnRepositoryChanged" Label="Site" Disabled="@BuildWatcher.IsUpdating">
+    <MudSelect T="string" Value="selectedRepositoryId" ValueChanged="OnRepositoryChanged" Label="Site" Disabled="@BuildWatcher.IsUpdating" Class="repository-dropdown">
         @if (repositories != null)
         {
             foreach (var repo in repositories)

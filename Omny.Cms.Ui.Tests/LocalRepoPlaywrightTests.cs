@@ -46,7 +46,10 @@ public class LocalRepoPlaywrightTests
         var browserPage = await browserContext.NewPageAsync();
         await browserPage.GotoAsync("/");
         await browserPage.WaitForSelectorAsync("#app");
-        await browserPage.SelectOptionAsync("#repository-dropdown", new[] { new SelectOptionValue { Label = repoName } });
+        var repoDropdown = browserPage.Locator(".repository-dropdown");
+        await repoDropdown.WaitForAsync();
+        await repoDropdown.ClickAsync();
+        await browserPage.Locator("div.mud-list-item", new() { HasText = repoName }).ClickAsync();
         await browserPage.WaitForLoadStateAsync(LoadState.NetworkIdle);
     }
 
@@ -143,7 +146,10 @@ public class LocalRepoPlaywrightTests
         _currentPage = page;
 
         await page.GotoAsync("/");
-        await page.SelectOptionAsync("#repository-dropdown", new[] { new SelectOptionValue { Label = repoName } });
+        var repoDropdown = page.Locator(".repository-dropdown");
+        await repoDropdown.WaitForAsync();
+        await repoDropdown.ClickAsync();
+        await page.Locator("div.mud-list-item", new() { HasText = repoName }).ClickAsync();
         await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
         
         var loadImageButton = await page.WaitForSelectorAsync("button:has-text('Load Image')");
