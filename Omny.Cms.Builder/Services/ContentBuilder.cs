@@ -65,7 +65,7 @@ public class ContentBuilder
             foreach (var rel in paths)
             {
                 string src = Path.Combine(folder, rel);
-                string dst = Path.Combine(outputDir, rel);
+                string dst = outputDir;
                 if (Directory.Exists(src))
                 {
                     _logger.LogDebug("Copying directory {Source} to {Destination}", src, dst);
