@@ -40,7 +40,8 @@ public class ImageFieldPlugin : IFieldPlugin
             }
             builder.OpenComponent<MudButton>(3);
             builder.AddAttribute(4, "OnClick", EventCallback.Factory.Create<MouseEventArgs>(this, (_) => OpenSelector(onChanged)));
-            builder.AddAttribute(5, "ChildContent", (RenderFragment)(builder2 => builder2.AddContent(0, "Select Image")));
+            builder.AddAttribute(5, "Variant", Variant.Filled);
+            builder.AddAttribute(6, "ChildContent", (RenderFragment)(builder2 => builder2.AddContent(0, "Select Image")));
             builder.CloseComponent();
             builder.CloseElement();
         };

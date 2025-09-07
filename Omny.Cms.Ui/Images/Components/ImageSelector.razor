@@ -39,12 +39,12 @@
         </MudFileUpload>
         @if (ShouldSelectImage)
         {
-            <MudButton @onclick="Confirm" Disabled="@string.IsNullOrEmpty(_selected)" Color="Color.Primary">Select</MudButton>
-            <MudButton @onclick="Cancel">Cancel</MudButton>
+            <MudButton @onclick="Confirm" Disabled="@string.IsNullOrEmpty(_selected)" Color="Color.Primary" Variant="Variant.Filled">Select</MudButton>
+            <MudButton @onclick="Cancel" Variant="Variant.Filled">Cancel</MudButton>
         }
         else
         {
-            <MudButton @onclick="Cancel" Color="Color.Primary">Close</MudButton>
+            <MudButton @onclick="Cancel" Color="Color.Primary" Variant="Variant.Filled">Close</MudButton>
         }
     </DialogActions>
 </MudDialog>

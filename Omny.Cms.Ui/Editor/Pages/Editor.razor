@@ -97,8 +97,8 @@ else
             @if (_selectedContentItem != null && !_changingContent && _currentFieldContents.Count > 0)
             {
                 <div class="editor-header">
-                    <MudButton OnClick="CloseItem" StartIcon="@Icons.Material.Filled.Close">Close</MudButton>
-                    <MudButton OnClick="SaveContentAsync" Disabled="@(!_changesMade)" Color="Color.Primary">Save</MudButton>
+                    <MudButton OnClick="CloseItem" StartIcon="@Icons.Material.Filled.Close" Variant="Variant.Filled">Close</MudButton>
+                    <MudButton OnClick="SaveContentAsync" Disabled="@(!_changesMade)" Color="Color.Primary" Variant="Variant.Filled">Save</MudButton>
                     <MudIconButton Class="fullscreen-toggle" Icon="@(_fullScreen ? Icons.Material.Filled.FullscreenExit : Icons.Material.Filled.Fullscreen)" OnClick="ToggleFullScreen" />
                 </div>
 
@@ -154,7 +154,7 @@ else
                 {
                     <div class="item-selector">
                         <MudTextField @bind-Value="_searchTerm" Placeholder="Search..." Immediate="true" />
-                        <MudButton Disabled="@(_selectedContentType == null)" OnClick="() => AddNewItemAsync(_selectedContentType!)" Color="Color.Primary">Add</MudButton>
+                        <MudButton Disabled="@(_selectedContentType == null)" OnClick="() => AddNewItemAsync(_selectedContentType!)" Color="Color.Primary" Variant="Variant.Filled">Add</MudButton>
                         <MudList T="string">
                             @foreach (var item in GetFilteredItems())
                             {
@@ -165,9 +165,9 @@ else
                                             @item.Name
                                         </div>
                                         <div>
-                                            <MudButton StartIcon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="() => SelectContentItem(_selectedContentType!, item)">Edit</MudButton>
-                                            <MudButton StartIcon="@Icons.Material.Filled.DriveFileRenameOutline" Size="Size.Small" OnClick="() => RenameItemAsync(_selectedContentType!, item)">Rename</MudButton>
-                                            <MudButton StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="() => DeleteItemAsync(_selectedContentType!, item)">Delete</MudButton>
+                                            <MudButton StartIcon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="() => SelectContentItem(_selectedContentType!, item)" Variant="Variant.Filled">Edit</MudButton>
+                                            <MudButton StartIcon="@Icons.Material.Filled.DriveFileRenameOutline" Size="Size.Small" OnClick="() => RenameItemAsync(_selectedContentType!, item)" Variant="Variant.Filled">Rename</MudButton>
+                                            <MudButton StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="() => DeleteItemAsync(_selectedContentType!, item)" Variant="Variant.Filled">Delete</MudButton>
                                         </div>
                                     </div>
                                 </MudListItem>
