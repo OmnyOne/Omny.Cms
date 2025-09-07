@@ -1,13 +1,38 @@
 @namespace Omny.Cms.UiEditor.Components
 @inherits TinyMceEditorBase
 @using TinyMCE.Blazor
+@using MudBlazor
 
-<TinyMCE.Blazor.Editor Value="@_value" ValueChanged="OnValueChanged" LicenseKey="gpl" ScriptSrc="/tinymce/tinymce.min.js" Conf="EditorConfig" />
+@if (_editorConfig != null)
+{
+    <TinyMCE.Blazor.Editor Value="@_value" ValueChanged="OnValueChanged" LicenseKey="gpl" ScriptSrc="/tinymce/tinymce.min.js" Conf="_editorConfig" />
+}
 
 @code {
-    private static readonly Dictionary<string, object> EditorConfig = new()
+    [CascadingParameter] private MudThemeProvider? ThemeProvider { get; set; }
+    private Dictionary<string, object>? _editorConfig;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        ["menubar"] = false,
-        ["promotion"] = false
-    };
+        await base.OnAfterRenderAsync(firstRender);
+        if (firstRender)
+        {
+            var darkMode = false;
+            if (ThemeProvider != null)
+            {
+                darkMode = await ThemeProvider.GetSystemDarkModeAsync();
+            }
+
+            var editorConfig = new Dictionary<string, object>
+            {
+                ["menubar"] = false,
+                ["promotion"] = false,
+                ["skin"] = darkMode ? "oxide-dark" : "oxide",
+                ["content_css"] = darkMode ? "dark" : "default"
+            };
+
+            _editorConfig = editorConfig;
+            StateHasChanged();
+        }
+    }
 }
