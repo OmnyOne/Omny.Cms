@@ -10,27 +10,29 @@
 
     @if (Loaded)
     {
-        <main>
-            <div class="top-row px-4">
-                <div class="top-row-content">
-                    <RepositorySelector/>
-                    <MudButton OnClick="Logout" Variant="Variant.Filled">Logout</MudButton>
+        <CascadingValue Value="_mudThemeProvider">
+            <main>
+                <div class="top-row px-4">
+                    <div class="top-row-content">
+                        <RepositorySelector/>
+                        <MudButton OnClick="Logout" Variant="Variant.Filled">Logout</MudButton>
+                    </div>
                 </div>
-            </div>
 
-            <article class="content px-4">
-                @* Required *@
+                <article class="content px-4">
+                    @* Required *@
 
-                <MudPopoverProvider/>
+                    <MudPopoverProvider/>
 
-                @* Needed for dialogs *@
-                <MudDialogProvider/>
+                    @* Needed for dialogs *@
+                    <MudDialogProvider/>
 
-                @* Needed for snackbars *@
-                <MudSnackbarProvider/>
-                @Body
-            </article>
-        </main>
+                    @* Needed for snackbars *@
+                    <MudSnackbarProvider/>
+                    @Body
+                </article>
+            </main>
+        </CascadingValue>
     }
 </div>
 

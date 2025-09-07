@@ -9,7 +9,7 @@
 }
 
 @code {
-    [CascadingParameter] private MudThemeProvider? ThemeProvider { get; set; }
+    [CascadingParameter] public MudThemeProvider? ThemeProvider { get; set; }
     private Dictionary<string, object>? _editorConfig;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
