@@ -130,7 +130,7 @@ public class EditorBase : ComponentBase, IDisposable
         }
         
         _selectedContentItem = newItem;
-        await BuildWatcher.StartWatchingAsync();
+        await BuildWatcher.StartWatchingAsync(quiet: true);
 
         _isSaving = false;
         StateHasChanged();
