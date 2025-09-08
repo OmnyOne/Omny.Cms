@@ -68,14 +68,8 @@ public class ContentBuilder
                 string dst = outputDir;
                 if (Directory.Exists(src))
                 {
-                    _logger.LogDebug("Copying directory {Source} to {Destination}", src, dst);
-                    CopyDirectory(src, dst);
-                }
-                else if (File.Exists(src))
-                {
-                    _logger.LogDebug("Copying file {Source} to {Destination}", src, dst);
-                    Directory.CreateDirectory(Path.GetDirectoryName(dst)!);
-                    File.Copy(src, dst, true);
+                    _logger.LogInformation("Copying directory {Source} to {Destination}", src, dst);
+                    CopyDirectory(src, dst, _logger);
                 }
             }
         }
@@ -114,7 +108,7 @@ public class ContentBuilder
         catch (TaskCanceledException) { }
     }
 
-    private static void CopyDirectory(string sourceDir, string destDir)
+    private static void CopyDirectory(string sourceDir, string destDir, ILogger logger)
     {
         Directory.CreateDirectory(destDir);
         foreach (var file in Directory.GetFiles(sourceDir, "*", SearchOption.AllDirectories))
@@ -122,6 +116,7 @@ public class ContentBuilder
             var rel = Path.GetRelativePath(sourceDir, file);
             var dest = Path.Combine(destDir, rel);
             Directory.CreateDirectory(Path.GetDirectoryName(dest)!);
+            logger.LogDebug("Copying file {Source} to {Destination}", file, dest);
             File.Copy(file, dest, true);
         }
     }

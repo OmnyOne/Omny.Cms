@@ -16,10 +16,8 @@ using Omny.Cms.Editor;
 var builder = Host.CreateApplicationBuilder(args);
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
-bool debugEnabled = builder.Configuration.GetValue<bool>("debug");
-builder.Logging.SetMinimumLevel(debugEnabled ? LogLevel.Debug : LogLevel.Information);
 builder.Services.AddBuilderServices();
-using var host = builder.Build();
+
 
 var folderOption = new Option<DirectoryInfo?>(
     name:"--folder")
@@ -44,6 +42,15 @@ root.SetAction(async parseResult =>
     var folder = parseResult.GetValue(folderOption);
     var watch = parseResult.GetValue(watchOption);
     string path = folder?.FullName ?? Directory.GetCurrentDirectory();
+    var debug = parseResult.GetValue(debugOption);
+    if (debug)
+    {
+        builder.Logging.SetMinimumLevel(LogLevel.Debug);
+    }
+    else {
+        builder.Logging.SetMinimumLevel(LogLevel.Information);
+    }
+    using var host = builder.Build();
     var fs = host.Services.GetRequiredService<IFileSystem>() as LocalFileSystem;
     if (fs != null)
     {
