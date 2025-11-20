@@ -8,6 +8,7 @@ using Omny.Cms.Plugins.Page;
 using Omny.Cms.Plugins.Menu;
 using Omny.Cms.Plugins.Hexo;
 using Omny.Cms.Rendering.ContentRendering;
+using Omny.Cms.Rendering;
 
 namespace Omny.Cms.Builder;
 
@@ -45,6 +46,13 @@ public static class ServiceCollectionExtensions
             .Where(t => typeof(IContentTypePlugin).IsAssignableFrom(t) && t.IsClass && !t.IsAbstract))
         {
             services.AddSingleton(typeof(IContentTypePlugin), pluginType);
+        }
+
+        foreach (var pluginType in assembly
+            .GetTypes()
+            .Where(t => typeof(IPagePlugin).IsAssignableFrom(t) && t.IsClass && !t.IsAbstract))
+        {
+            services.AddSingleton(typeof(IPagePlugin), pluginType);
         }
 
         return services;
