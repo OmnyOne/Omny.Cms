@@ -1,4 +1,5 @@
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -11,6 +12,7 @@ using Omny.Cms.Plugins.Page;
 using Omny.Cms.Plugins.Menu;
 using Omny.Cms.Plugins.Hexo;
 using Omny.Cms.Editor;
+using Omny.Cms.Manifest;
 
 namespace Omny.Cms.Builder.Tests;
 
@@ -57,6 +59,22 @@ public class ContentBuilderTests
         Assert.IsTrue(File.Exists(imagePath));
     }
 
+    [Test]
+    public void AddPluginsFromAssembly_RegistersPluginsAndRenderers()
+    {
+        ServiceCollection services = new ServiceCollection();
+
+        services.AddBuilderServices();
+        services.AddPluginsFromAssembly(typeof(TestContentTypePlugin).Assembly);
+
+        var provider = services.BuildServiceProvider();
+        var plugins = provider.GetServices<IContentTypePlugin>();
+        var renderers = provider.GetServices<IContentTypeRenderer>();
+
+        Assert.IsTrue(plugins.Any(plugin => plugin is TestContentTypePlugin));
+        Assert.IsTrue(renderers.Any(renderer => renderer is TestContentTypeRenderer));
+    }
+
     private static void CopyDirectory(string sourceDir, string destDir)
     {
         Directory.CreateDirectory(destDir);
@@ -66,6 +84,39 @@ public class ContentBuilderTests
             var dest = Path.Combine(destDir, rel);
             Directory.CreateDirectory(Path.GetDirectoryName(dest)!);
             File.Copy(file, dest, true);
+        }
+    }
+
+    private class TestContentTypePlugin : IContentTypePlugin
+    {
+        public string Name => "Test.ContentType";
+
+        public string ContentType => "Test.ContentType";
+
+        public ContentTypeMetadata Metadata => new()
+        {
+            PluginType = ContentType,
+            Folder = "content/test"
+        };
+
+        public ContentTypeMetadata Configure(ContentTypePluginConfiguration config)
+        {
+            return Metadata;
+        }
+    }
+
+    private class TestContentTypeRenderer : IContentTypeRenderer
+    {
+        public string ContentType => "Test.ContentType";
+
+        public string GetOutputFileName(ContentItem contentItem, OmnyManifest manifest)
+        {
+            return contentItem.Name + ".html";
+        }
+
+        public string RenderContentType(ContentItem contentItem, OmnyManifest manifest)
+        {
+            return "<html><body>test</body></html>";
         }
     }
 }
