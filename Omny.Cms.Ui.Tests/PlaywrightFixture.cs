@@ -1,3 +1,4 @@
+extern alias apphost;
 using Microsoft.Playwright;
 using System.Net.Http.Json;
 using Amazon.S3;
@@ -28,7 +29,7 @@ public class PlaywrightFixture : IDisposable
         string dbConnectionString;
         try
         {
-            var builder = await DistributedApplicationTestingBuilder.CreateAsync<Projects.Omny_Aspire_AppHost>();
+            var builder = await DistributedApplicationTestingBuilder.CreateAsync<apphost::Projects.Omny_Aspire_AppHost>();
             await using var app = await builder.BuildAsync();
             await app.StartAsync();
 
