@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,6 +14,7 @@ using Omny.Cms.Plugins.Menu;
 using Omny.Cms.Plugins.Hexo;
 using Omny.Cms.Editor;
 using Omny.Cms.Manifest;
+using Omny.Cms.Rendering;
 
 namespace Omny.Cms.Builder.Tests;
 
@@ -26,9 +28,13 @@ public class ContentBuilderTests
         var tempDir = Path.Combine(Path.GetTempPath(), "omnytest_" + Guid.NewGuid().ToString());
         CopyDirectory(sampleSite, tempDir);
 
+        string templatePath = Path.Combine(tempDir, "content", "template.html");
+        File.WriteAllText(templatePath, "<html><body>{{Menu}}{{Greeting}}{{Body}}</body></html>");
+
         ServiceCollection services = new ServiceCollection();
-        
+
         services.AddBuilderServices();
+        services.AddSingleton<IPagePlugin, TestPagePlugin>();
         // add logging
         services.AddLogging(builder => builder.AddConsole());
         
@@ -54,6 +60,9 @@ public class ContentBuilderTests
         StringAssert.Contains("<html><body><ul", indexActual);
         StringAssert.Contains(indexExpected.Trim(), indexActual);
         StringAssert.Contains(aboutExpected.Trim(), aboutActual);
+        StringAssert.Contains("Hello index.html", indexActual);
+        StringAssert.Contains("Hello about.html", aboutActual);
+        StringAssert.DoesNotContain("{{Greeting}}", indexActual);
 
         var imagePath = Path.Combine(outputDir, "pixel.png");
         Assert.IsTrue(File.Exists(imagePath));
@@ -70,9 +79,11 @@ public class ContentBuilderTests
         var provider = services.BuildServiceProvider();
         var plugins = provider.GetServices<IContentTypePlugin>();
         var renderers = provider.GetServices<IContentTypeRenderer>();
+        var pagePlugins = provider.GetServices<IPagePlugin>();
 
         Assert.IsTrue(plugins.Any(plugin => plugin is TestContentTypePlugin));
         Assert.IsTrue(renderers.Any(renderer => renderer is TestContentTypeRenderer));
+        Assert.IsTrue(pagePlugins.Any(plugin => plugin is TestPagePlugin));
     }
 
     private static void CopyDirectory(string sourceDir, string destDir)
@@ -117,6 +128,19 @@ public class ContentBuilderTests
         public string RenderContentType(ContentItem contentItem, OmnyManifest manifest)
         {
             return "<html><body>test</body></html>";
+        }
+    }
+
+    private class TestPagePlugin : IPagePlugin
+    {
+        public string Name => nameof(TestPagePlugin);
+
+        public Dictionary<string, string> Render(ContentItem contentItem, OmnyManifest manifest, string pagePath)
+        {
+            return new Dictionary<string, string>
+            {
+                { "Greeting", $"Hello {pagePath}" }
+            };
         }
     }
 }

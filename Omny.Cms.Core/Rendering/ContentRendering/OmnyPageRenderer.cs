@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IO;
 using Omny.Cms.Files;
 using Omny.Cms.Editor.ContentTypes;
@@ -5,12 +6,18 @@ using Omny.Cms.Manifest;
 using Omny.Cms.Editor;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Omny.Cms.Rendering;
 
 
 namespace Omny.Cms.Rendering.ContentRendering;
 
-public class OmnyPageRenderer(IFileSystem fileSystem, IContentTypeSerializer serializer) : IContentTypeRenderer
+public class OmnyPageRenderer(
+    IFileSystem fileSystem,
+    IContentTypeSerializer serializer,
+    IEnumerable<IPagePlugin> pagePlugins) : IContentTypeRenderer
 {
+    private readonly IEnumerable<IPagePlugin> _pagePlugins = pagePlugins;
+
     public string ContentType => "Omny.Page";
     public string GetOutputFileName(ContentItem contentItem, OmnyManifest manifest)
     {
@@ -34,6 +41,7 @@ public class OmnyPageRenderer(IFileSystem fileSystem, IContentTypeSerializer ser
 
     public string RenderContentType(ContentItem contentItem, OmnyManifest manifest)
     {
+        string pagePath = GetOutputFileName(contentItem, manifest);
         string bodyHtml = string.Empty;
         if (manifest.ContentTypeDefinitions.TryGetValue(contentItem.ContentType, out var meta) && meta.Folder is not null)
         {
@@ -130,19 +138,21 @@ public class OmnyPageRenderer(IFileSystem fileSystem, IContentTypeSerializer ser
         string menuHtml = BuildMenuHtml(manifest);
 
         string templateName = manifest.CustomData.TryGetValue("PageTemplate", out var val) ? val?.ToString() ?? "" : "";
-        string templatePath = string.IsNullOrEmpty(templateName)
-            ? Path.Combine("content/template.html")
-            : templateName;
-        if (fileSystem.FileExistsAsync(templatePath).GetAwaiter().GetResult())
-        {
-            var template = fileSystem.ReadAllTextAsync(templatePath).GetAwaiter().GetResult();
-            return template
-                .Replace("{{Body}}", bodyHtml)
-                .Replace("{{Menu}}", menuHtml)
-                .Replace("{{Title}}", contentItem.Name);
-        }
+            string templatePath = string.IsNullOrEmpty(templateName)
+                ? Path.Combine("content/template.html")
+                : templateName;
+            if (fileSystem.FileExistsAsync(templatePath).GetAwaiter().GetResult())
+            {
+                var template = fileSystem.ReadAllTextAsync(templatePath).GetAwaiter().GetResult();
+                string renderedTemplate = template
+                    .Replace("{{Body}}", bodyHtml)
+                    .Replace("{{Menu}}", menuHtml)
+                    .Replace("{{Title}}", contentItem.Name);
 
-        return bodyHtml;
+            return ApplyPagePlugins(renderedTemplate, contentItem, manifest, pagePath);
+            }
+
+        return ApplyPagePlugins(bodyHtml, contentItem, manifest, pagePath);
     }
 
     private record CollectionFileList(
@@ -272,6 +282,29 @@ public class OmnyPageRenderer(IFileSystem fileSystem, IContentTypeSerializer ser
         sb.AppendLine("</ul>");
         return sb.ToString();
     }
-}
 
+    }
+
+    private string ApplyPagePlugins(string content, ContentItem contentItem, OmnyManifest manifest, string pagePath)
+    {
+        string updatedContent = content;
+
+        foreach (var plugin in _pagePlugins)
+        {
+            Dictionary<string, string>? replacements = plugin.Render(contentItem, manifest, pagePath);
+
+            if (replacements == null)
+            {
+                continue;
+            }
+
+            foreach (var replacement in replacements)
+            {
+                string token = $"{{{{{replacement.Key}}}}}";
+                updatedContent = updatedContent.Replace(token, replacement.Value);
+            }
+        }
+
+        return updatedContent;
+    }
 }
