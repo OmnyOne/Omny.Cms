@@ -30,7 +30,9 @@
   <ItemGroup>
     <ProjectReference Include="../Omny.Cms.Ui/Omny.Cms.Ui.csproj" />
     <ProjectReference Include="../Omny.Cms.Abstractions/Omny.Cms.Abstractions.csproj" />
-    <ProjectReference Include="..\Omny.Aspire.AppHost\Omny.Aspire.AppHost.csproj" />
+    <ProjectReference Include="..\Omny.Aspire.AppHost\Omny.Aspire.AppHost.csproj">
+      <Aliases>apphost</Aliases>
+    </ProjectReference>
     <ProjectReference Include="..\Omny.Cms.Plugins\Omny.Cms.Plugins.csproj" />
     <ProjectReference Include="../Omny.Cms.Api/Omny.Cms.Api.csproj" />
   </ItemGroup>
