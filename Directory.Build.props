@@ -3,5 +3,6 @@
     <TargetFramework>net10.0</TargetFramework>
     <RollForward>Major</RollForward>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <NuGetAudit>false</NuGetAudit>
   </PropertyGroup>
 </Project>
