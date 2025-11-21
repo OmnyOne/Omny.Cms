@@ -29,7 +29,7 @@
     <PackageVersion Include="NUnit" Version="3.13.3" />
     <PackageVersion Include="NUnit3TestAdapter" Version="4.5.0" />
     <PackageVersion Include="Octokit" Version="14.0.0" />
-    <PackageVersion Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+    <PackageVersion Include="Scalar.AspNetCore" Version="1.0.0" />
     <PackageVersion Include="System.CommandLine" Version="2.0.0-beta5.25306.1" />
     <PackageVersion Include="TinyMCE.Blazor" Version="2.1.0" />
     <PackageVersion Include="YamlDotNet" Version="13.1.0" />
