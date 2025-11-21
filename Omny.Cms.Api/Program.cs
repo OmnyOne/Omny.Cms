@@ -8,13 +8,12 @@ using Omny.Api;
 using Omny.Api.Auth;
 using WebApplication1;
 using Omny.Cms.Api.Extensions;
+using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddOpenApi();
 builder.Services.AddAuthentication();
 
 bool hasAuth0Config = builder.Configuration.GetSection("Auth0").Exists() &&
@@ -103,8 +102,8 @@ if (builder.Configuration.GetValue<string>("OverrideHost") is { } overrideHost)
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.MapOpenApi();
+    app.MapScalarUi();
 }
 
 app.UseAuthentication();
