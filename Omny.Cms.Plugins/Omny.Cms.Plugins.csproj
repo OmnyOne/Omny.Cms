@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <Configurations>Debug;Release;Debug-Free</Configurations>
     <Platforms>AnyCPU</Platforms>
+    <IsPackable>true</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
