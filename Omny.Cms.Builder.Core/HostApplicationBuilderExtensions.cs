@@ -29,6 +29,11 @@ public class OmnyBuilderDefaults
     public IEnumerable<FileInfo>? PluginFiles { get; init; }
 }
 
+public class OmnyBuilder
+{
+    
+}
+
 public static class HostApplicationBuilderExtensions
 {
     public static HostApplicationBuilder ConfigureOmnyBuilder(this HostApplicationBuilder builder)
@@ -95,7 +100,7 @@ public static class HostApplicationBuilderExtensions
             }
 
             var svc = host.Services.GetRequiredService<ContentBuilder>();
-            var logger = host.Services.GetRequiredService<ILogger<Program>>();
+            var logger = host.Services.GetRequiredService<ILogger<OmnyBuilder>>();
             await svc.BuildAsync(path);
             if (watch)
             {

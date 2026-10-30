@@ -9,6 +9,7 @@ using Omny.Cms.Plugins.Menu;
 using Omny.Cms.Plugins.Hexo;
 using Omny.Cms.Rendering.ContentRendering;
 using Omny.Cms.Rendering;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Omny.Cms.Builder;
 

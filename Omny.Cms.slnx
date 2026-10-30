@@ -4,13 +4,14 @@
     <BuildType Name="Debug-Free" />
     <BuildType Name="Release" />
   </Configurations>
-  <Project Path="Omny.Aspire.AppHost\Omny.Aspire.AppHost.csproj" Type="Classic C#">
+  <Project Path="Omny.Aspire.AppHost\Omny.Aspire.AppHost.csproj" Type="C#">
     <Configuration Solution="Debug-Free|Any CPU" Project="Debug|Any CPU" />
   </Project>
   <Project Path="Omny.Cms.Abstractions/Omny.Cms.Abstractions.csproj" />
   <Project Path="Omny.Cms.Api\Omny.Cms.Api.csproj">
     <Configuration Solution="Debug-Free|Any CPU" Project="Debug|Any CPU" />
   </Project>
+  <Project Path="Omny.Cms.Builder.Core/Omny.Cms.Builder.Core.csproj" />
   <Project Path="Omny.Cms.Builder.Tests/Omny.Cms.Builder.Tests.csproj">
     <Configuration Solution="Debug-Free|Any CPU" Project="Debug|Any CPU" />
   </Project>
