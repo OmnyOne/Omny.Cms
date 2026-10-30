@@ -1,5 +1,6 @@
 using System.Linq;
 using System.Reflection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Omny.Cms.Builder.Services;
 using Omny.Cms.Editor;
 using Omny.Cms.Editor.ContentTypes;
@@ -26,6 +27,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IContentTypeSerializer, ContentTypeSerializer>();
         services.AddScoped<DefaultContentTypeSerializer>();
         services.AddScoped<IContentTypeRenderer, OmnyPageRenderer>();
+        services.TryAddSingleton<ITemplatePlugin, DefaultTemplatePlugin>();
         services.AddScoped<IContentTypeSerializerPlugin, DefaultContentTypeSerializer>();
         services.AddScoped<IContentTypeSerializerPlugin, HexoPostSerializer>();
         services.AddSingleton<ContentBuilder>();
@@ -54,6 +56,13 @@ public static class ServiceCollectionExtensions
             .Where(t => typeof(IPagePlugin).IsAssignableFrom(t) && t.IsClass && !t.IsAbstract))
         {
             services.AddSingleton(typeof(IPagePlugin), pluginType);
+        }
+
+        foreach (var pluginType in assembly
+            .GetTypes()
+            .Where(t => typeof(ITemplatePlugin).IsAssignableFrom(t) && t.IsClass && !t.IsAbstract))
+        {
+            services.AddSingleton(typeof(ITemplatePlugin), pluginType);
         }
 
         return services;
