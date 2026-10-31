@@ -24,12 +24,12 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IContentTypePlugin,PagePlugin>();
         services.AddSingleton<IContentTypePlugin, MenuPlugin>();
         services.AddSingleton<IContentTypePlugin, HexoPostPlugin>();
-        services.AddScoped<IContentTypeSerializer, ContentTypeSerializer>();
-        services.AddScoped<DefaultContentTypeSerializer>();
-        services.AddScoped<IContentTypeRenderer, OmnyPageRenderer>();
+        services.AddSingleton<IContentTypeSerializer, ContentTypeSerializer>();
+        services.AddSingleton<DefaultContentTypeSerializer>();
+        services.AddSingleton<IContentTypeRenderer, OmnyPageRenderer>();
         services.TryAddSingleton<ITemplatePlugin, DefaultTemplatePlugin>();
-        services.AddScoped<IContentTypeSerializerPlugin, DefaultContentTypeSerializer>();
-        services.AddScoped<IContentTypeSerializerPlugin, HexoPostSerializer>();
+        services.AddSingleton<IContentTypeSerializerPlugin, DefaultContentTypeSerializer>();
+        services.AddSingleton<IContentTypeSerializerPlugin, HexoPostSerializer>();
         services.AddSingleton<ContentBuilder>();
         services.AddSingleton<IFileSystem>(sp => new LocalFileSystem(Directory.GetCurrentDirectory()));
         return services;
@@ -41,7 +41,7 @@ public static class ServiceCollectionExtensions
             .GetTypes()
             .Where(t => typeof(IContentTypeRenderer).IsAssignableFrom(t) && t.IsClass && !t.IsAbstract))
         {
-            services.AddScoped(typeof(IContentTypeRenderer), rendererType);
+            services.AddSingleton(typeof(IContentTypeRenderer), rendererType);
         }
 
         foreach (var pluginType in assembly

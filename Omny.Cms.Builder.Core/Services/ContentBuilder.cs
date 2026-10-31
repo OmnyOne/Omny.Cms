@@ -1,6 +1,8 @@
 using System;
 using System.IO;
 using System.Linq;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.FileProviders;
 using Omny.Cms.Editor;
 using Omny.Cms.Editor.ContentTypes;
 using Omny.Cms.Manifest;
@@ -88,6 +90,40 @@ public class ContentBuilder
         }
 
         _logger.LogInformation("Build complete.");
+    }
+
+    public async Task StartServerAsync(WebApplication host, string folder, CancellationToken token)
+    {
+        string normalizedFolder = Path.GetFullPath(folder);
+        var contentService = new FileSystemContentService(normalizedFolder, _serializer, _plugins);
+        OmnyManifest manifest = await contentService.GetManifestAsync();
+        string outputSetting = manifest.BuildConfiguration?.OutputDirectory ?? "dist";
+        string outputDirectory = Path.GetFullPath(Path.Combine(normalizedFolder, 
+            outputSetting));
+        PhysicalFileProvider fileProvider = new(outputDirectory);
+        var staticFileOptions = new StaticFileOptions
+        {
+            FileProvider = fileProvider,
+            RequestPath = ""
+        };
+        
+        DefaultFilesOptions defaultFileOptions = new()
+        {
+            FileProvider = fileProvider,
+            DefaultFileNames = { "index.html" },
+            RequestPath = ""
+        };
+
+        host.UseDefaultFiles(defaultFileOptions);
+        host.UseStaticFiles(staticFileOptions);
+        await host.StartAsync(token);
+        // log the URLs
+        var serverAddresses = host.Urls;
+        foreach (var address in serverAddresses)
+        {
+            _logger.LogInformation("Server running at {Address}", address);
+        }
+            
     }
 
     public async Task WatchAsync(string folder, CancellationToken token)
