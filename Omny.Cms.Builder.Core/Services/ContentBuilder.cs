@@ -1,6 +1,8 @@
 using System;
 using System.IO;
 using System.Linq;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.FileProviders;
 using Omny.Cms.Editor;
 using Omny.Cms.Editor.ContentTypes;
 using Omny.Cms.Manifest;
@@ -90,22 +92,128 @@ public class ContentBuilder
         _logger.LogInformation("Build complete.");
     }
 
+    public async Task StartServerAsync(WebApplication host, string folder, CancellationToken token)
+    {
+        string normalizedFolder = Path.GetFullPath(folder);
+        var contentService = new FileSystemContentService(normalizedFolder, _serializer, _plugins);
+        OmnyManifest manifest = await contentService.GetManifestAsync();
+        string outputSetting = manifest.BuildConfiguration?.OutputDirectory ?? "dist";
+        string outputDirectory = Path.GetFullPath(Path.Combine(normalizedFolder, 
+            outputSetting));
+        PhysicalFileProvider fileProvider = new(outputDirectory);
+        var staticFileOptions = new StaticFileOptions
+        {
+            FileProvider = fileProvider,
+            RequestPath = ""
+        };
+        
+        DefaultFilesOptions defaultFileOptions = new()
+        {
+            FileProvider = fileProvider,
+            DefaultFileNames = { "index.html" },
+            RequestPath = ""
+        };
+
+        host.UseDefaultFiles(defaultFileOptions);
+        host.UseStaticFiles(staticFileOptions);
+        await host.StartAsync(token);
+        // log the URLs
+        var serverAddresses = host.Urls;
+        foreach (var address in serverAddresses)
+        {
+            _logger.LogInformation("Server running at {Address}", address);
+        }
+            
+    }
+
     public async Task WatchAsync(string folder, CancellationToken token)
     {
-        using var watcher = new FileSystemWatcher(folder)
+        string normalizedFolder = Path.GetFullPath(folder);
+        var contentService = new FileSystemContentService(normalizedFolder, _serializer, _plugins);
+        OmnyManifest manifest = await contentService.GetManifestAsync();
+        string outputSetting = manifest.BuildConfiguration?.OutputDirectory ?? "dist";
+        string outputDirectory = Path.GetFullPath(Path.Combine(normalizedFolder, outputSetting));
+
+        using var buildGate = new SemaphoreSlim(1, 1);
+        int pendingBuild = 0;
+
+        bool IsOutputPath(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                return false;
+            }
+
+            string fullPath = Path.GetFullPath(path);
+            if (string.Equals(fullPath, outputDirectory, GetPathComparison()))
+            {
+                return true;
+            }
+
+            string outputPrefix = outputDirectory.EndsWith(Path.DirectorySeparatorChar)
+                ? outputDirectory
+                : outputDirectory + Path.DirectorySeparatorChar;
+            return fullPath.StartsWith(outputPrefix, GetPathComparison());
+        }
+
+        async Task TriggerBuildAsync(string changedPath)
+        {
+            if (IsOutputPath(changedPath))
+            {
+                _logger.LogDebug("Ignoring watch event under output directory: {Path}", changedPath);
+                return;
+            }
+
+            if (!await buildGate.WaitAsync(0, token))
+            {
+                Interlocked.Exchange(ref pendingBuild, 1);
+                _logger.LogDebug("Build already in progress; queued another rebuild.");
+                return;
+            }
+
+            try
+            {
+                do
+                {
+                    Interlocked.Exchange(ref pendingBuild, 0);
+                    await BuildAsync(normalizedFolder);
+                }
+                while (Interlocked.CompareExchange(ref pendingBuild, 0, 1) == 1 && !token.IsCancellationRequested);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Build failed while watching.");
+            }
+            finally
+            {
+                buildGate.Release();
+            }
+        }
+
+        using var watcher = new FileSystemWatcher(normalizedFolder)
         {
             IncludeSubdirectories = true,
             EnableRaisingEvents = true
         };
-        watcher.Changed += async (_, __) => await BuildAsync(folder);
-        watcher.Created += async (_, __) => await BuildAsync(folder);
-        watcher.Deleted += async (_, __) => await BuildAsync(folder);
-        watcher.Renamed += async (_, __) => await BuildAsync(folder);
+        watcher.Changed += async (_, e) => await TriggerBuildAsync(e.FullPath);
+        watcher.Created += async (_, e) => await TriggerBuildAsync(e.FullPath);
+        watcher.Deleted += async (_, e) => await TriggerBuildAsync(e.FullPath);
+        watcher.Renamed += async (_, e) => await TriggerBuildAsync(e.FullPath);
         try
         {
             await Task.Delay(Timeout.Infinite, token);
         }
         catch (TaskCanceledException) { }
+    }
+
+    private static StringComparison GetPathComparison()
+    {
+        if (OperatingSystem.IsWindows() || OperatingSystem.IsMacOS())
+        {
+            return StringComparison.OrdinalIgnoreCase;
+        }
+
+        return StringComparison.Ordinal;
     }
 
     private static void CopyDirectory(string sourceDir, string destDir, ILogger logger)
