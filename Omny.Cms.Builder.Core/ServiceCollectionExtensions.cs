@@ -1,5 +1,6 @@
 using System.Linq;
 using System.Reflection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Omny.Cms.Builder.Services;
 using Omny.Cms.Editor;
 using Omny.Cms.Editor.ContentTypes;
@@ -23,11 +24,12 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IContentTypePlugin,PagePlugin>();
         services.AddSingleton<IContentTypePlugin, MenuPlugin>();
         services.AddSingleton<IContentTypePlugin, HexoPostPlugin>();
-        services.AddScoped<IContentTypeSerializer, ContentTypeSerializer>();
-        services.AddScoped<DefaultContentTypeSerializer>();
-        services.AddScoped<IContentTypeRenderer, OmnyPageRenderer>();
-        services.AddScoped<IContentTypeSerializerPlugin, DefaultContentTypeSerializer>();
-        services.AddScoped<IContentTypeSerializerPlugin, HexoPostSerializer>();
+        services.AddSingleton<IContentTypeSerializer, ContentTypeSerializer>();
+        services.AddSingleton<DefaultContentTypeSerializer>();
+        services.AddSingleton<IContentTypeRenderer, OmnyPageRenderer>();
+        services.TryAddSingleton<ITemplatePlugin, DefaultTemplatePlugin>();
+        services.AddSingleton<IContentTypeSerializerPlugin, DefaultContentTypeSerializer>();
+        services.AddSingleton<IContentTypeSerializerPlugin, HexoPostSerializer>();
         services.AddSingleton<ContentBuilder>();
         services.AddSingleton<IFileSystem>(sp => new LocalFileSystem(Directory.GetCurrentDirectory()));
         return services;
@@ -39,7 +41,7 @@ public static class ServiceCollectionExtensions
             .GetTypes()
             .Where(t => typeof(IContentTypeRenderer).IsAssignableFrom(t) && t.IsClass && !t.IsAbstract))
         {
-            services.AddScoped(typeof(IContentTypeRenderer), rendererType);
+            services.AddSingleton(typeof(IContentTypeRenderer), rendererType);
         }
 
         foreach (var pluginType in assembly
@@ -54,6 +56,13 @@ public static class ServiceCollectionExtensions
             .Where(t => typeof(IPagePlugin).IsAssignableFrom(t) && t.IsClass && !t.IsAbstract))
         {
             services.AddSingleton(typeof(IPagePlugin), pluginType);
+        }
+
+        foreach (var pluginType in assembly
+            .GetTypes()
+            .Where(t => typeof(ITemplatePlugin).IsAssignableFrom(t) && t.IsClass && !t.IsAbstract))
+        {
+            services.AddSingleton(typeof(ITemplatePlugin), pluginType);
         }
 
         return services;

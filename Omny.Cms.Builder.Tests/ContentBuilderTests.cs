@@ -20,8 +20,9 @@ namespace Omny.Cms.Builder.Tests;
 
 public class ContentBuilderTests
 {
-    [Test]
-    public async Task BuildDefaultSite_GeneratesExpectedHtml()
+    [TestCase(false)]
+    [TestCase(true)]
+    public async Task BuildDefaultSite_GeneratesExpectedHtml(bool useCustomTemplate)
     {
         var repoRoot = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../"));
         var sampleSite = Path.Combine(repoRoot, "SampleSite");
@@ -35,6 +36,14 @@ public class ContentBuilderTests
 
         services.AddBuilderServices();
         services.AddSingleton<IPagePlugin, TestPagePlugin>();
+        if (useCustomTemplate)
+        {
+            services.AddSingleton<ITemplatePlugin, TestTemplatePlugin>();
+            File.WriteAllText(Path.Combine(tempDir, "content", "index.html"),
+                "<html><body>{{Menu}}{{Greeting}}{{Body}}<footer>Custom index</footer></body></html>");
+            File.WriteAllText(Path.Combine(tempDir, "content", "about.html"),
+                "<html><body>{{Menu}}{{Greeting}}{{Body}}<footer>Custom about</footer></body></html>");
+        }
         // add logging
         services.AddLogging(builder => builder.AddConsole());
         
@@ -63,6 +72,11 @@ public class ContentBuilderTests
         StringAssert.Contains("Hello index.html", indexActual);
         StringAssert.Contains("Hello about.html", aboutActual);
         StringAssert.DoesNotContain("{{Greeting}}", indexActual);
+        if (useCustomTemplate)
+        {
+            StringAssert.Contains("<footer>Custom index</footer>", indexActual);
+            StringAssert.Contains("<footer>Custom about</footer>", aboutActual);
+        }
 
         var imagePath = Path.Combine(outputDir, "pixel.png");
         Assert.IsTrue(File.Exists(imagePath));
@@ -80,10 +94,62 @@ public class ContentBuilderTests
         var plugins = provider.GetServices<IContentTypePlugin>();
         var renderers = provider.GetServices<IContentTypeRenderer>();
         var pagePlugins = provider.GetServices<IPagePlugin>();
+        var templatePlugin = provider.GetRequiredService<ITemplatePlugin>();
 
         Assert.IsTrue(plugins.Any(plugin => plugin is TestContentTypePlugin));
         Assert.IsTrue(renderers.Any(renderer => renderer is TestContentTypeRenderer));
         Assert.IsTrue(pagePlugins.Any(plugin => plugin is TestPagePlugin));
+        Assert.IsInstanceOf<TestTemplatePlugin>(templatePlugin);
+    }
+
+    [TestCase(null, "content/template.html")]
+    [TestCase("", "content/template.html")]
+    [TestCase("content/custom.html", "content/custom.html")]
+    public void DefaultTemplatePlugin_UsesManifestOrDefaultPath(string? configuredPath, string expectedPath)
+    {
+        var manifest = new OmnyManifest
+        {
+            CustomData = new Dictionary<string, object> { ["PageTemplate"] = configuredPath! }
+        };
+        var plugin = new DefaultTemplatePlugin();
+        var item = new ContentItem("Page", "index", Array.Empty<string>());
+
+        string path = plugin.GetTemplatePath(item, manifest, "index.html");
+
+        Assert.AreEqual(expectedPath, path);
+    }
+
+    [TestCase(true)]
+    [TestCase(false)]
+    public void AddBuilderServices_PreservesCustomTemplatePlugin(bool registerBeforeBuilder)
+    {
+        var services = new ServiceCollection();
+        if (registerBeforeBuilder)
+        {
+            services.AddSingleton<ITemplatePlugin, TestTemplatePlugin>();
+        }
+
+        services.AddBuilderServices();
+        if (!registerBeforeBuilder)
+        {
+            services.AddSingleton<ITemplatePlugin, TestTemplatePlugin>();
+        }
+
+        using var provider = services.BuildServiceProvider();
+        var plugin = provider.GetRequiredService<ITemplatePlugin>();
+
+        Assert.IsInstanceOf<TestTemplatePlugin>(plugin);
+    }
+
+    [Test]
+    public void DefaultTemplatePlugin_HandlesMissingCustomData()
+    {
+        var plugin = new DefaultTemplatePlugin();
+        var item = new ContentItem("Page", "index", Array.Empty<string>());
+
+        string path = plugin.GetTemplatePath(item, new OmnyManifest(), "index.html");
+
+        Assert.AreEqual("content/template.html", path);
     }
 
     private static void CopyDirectory(string sourceDir, string destDir)
@@ -128,6 +194,17 @@ public class ContentBuilderTests
         public string RenderContentType(ContentItem contentItem, OmnyManifest manifest)
         {
             return "<html><body>test</body></html>";
+        }
+    }
+
+    private class TestTemplatePlugin : ITemplatePlugin
+    {
+        public string GetTemplatePath(ContentItem contentItem, OmnyManifest manifest, string pagePath)
+        {
+            Assert.IsTrue(manifest.ContentTypeDefinitions.ContainsKey(contentItem.ContentType));
+            Assert.AreEqual(contentItem.FieldValues!["Path"] + ".html", pagePath);
+            string templatePath = Path.Combine("content", pagePath);
+            return templatePath;
         }
     }
 

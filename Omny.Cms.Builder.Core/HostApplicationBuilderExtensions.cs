@@ -3,13 +3,17 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Omny.Cms.Builder.Services;
 using Omny.Cms.Editor;
 using Omny.Cms.Editor.ContentTypes;
 using Omny.Cms.Files;
+using Omny.Cms.Manifest;
 using Omny.Cms.Plugins.Hexo;
 using Omny.Cms.Plugins.Infrastructure;
 using Omny.Cms.Plugins.Menu;
@@ -24,6 +28,8 @@ public class OmnyBuilderDefaults
 
     public bool? Watch { get; init; }
 
+    public bool? Serve { get; init; }
+
     public bool? Debug { get; init; }
 
     public IEnumerable<FileInfo>? PluginFiles { get; init; }
@@ -36,7 +42,7 @@ public class OmnyBuilder
 
 public static class HostApplicationBuilderExtensions
 {
-    public static HostApplicationBuilder ConfigureOmnyBuilder(this HostApplicationBuilder builder)
+    public static WebApplicationBuilder ConfigureOmnyBuilder(this WebApplicationBuilder builder)
     {
         builder.Logging.ClearProviders();
         builder.Logging.AddConsole();
@@ -45,7 +51,7 @@ public static class HostApplicationBuilderExtensions
     }
 
     public static async Task<int> RunOmnyBuilder(
-        this HostApplicationBuilder builder,
+        this WebApplicationBuilder builder,
         string[]? args = null,
         OmnyBuilderDefaults? defaults = null)
     {
@@ -56,6 +62,11 @@ public static class HostApplicationBuilderExtensions
         var watchOption = new Option<bool>("--watch")
         {
             DefaultValueFactory = _ => defaults?.Watch ?? false,
+        };
+
+        var serveOption = new Option<bool>("--serve")
+        {
+            DefaultValueFactory = _ => defaults?.Serve ?? false,
         };
 
         var pluginOption = new Option<FileInfo[]>("--plugin")
@@ -71,12 +82,14 @@ public static class HostApplicationBuilderExtensions
         };
         root.Options.Add(folderOption);
         root.Options.Add(watchOption);
+        root.Options.Add(serveOption);
         root.Options.Add(debugOption);
         root.Options.Add(pluginOption);
         root.SetAction(async parseResult =>
         {
             var folder = parseResult.GetValue(folderOption);
             var watch = parseResult.GetValue(watchOption);
+            var serve = parseResult.GetValue(serveOption);
             string path = folder?.FullName ?? Directory.GetCurrentDirectory();
             var debug = parseResult.GetValue(debugOption);
             if (debug)
@@ -92,7 +105,7 @@ public static class HostApplicationBuilderExtensions
             var pluginAssemblies = LoadPluginAssemblies(pluginFiles);
             builder.Services.AddPluginsFromAssemblies(pluginAssemblies);
 
-            using var host = builder.Build();
+            await using var host = builder.Build();
             var fs = host.Services.GetRequiredService<IFileSystem>() as LocalFileSystem;
             if (fs != null)
             {
@@ -102,15 +115,28 @@ public static class HostApplicationBuilderExtensions
             var svc = host.Services.GetRequiredService<ContentBuilder>();
             var logger = host.Services.GetRequiredService<ILogger<OmnyBuilder>>();
             await svc.BuildAsync(path);
+            if(!watch && ! serve)
+            {
+                return;
+            }
+            
+            using var cts = new CancellationTokenSource();
+            Console.CancelKeyPress += (s, e) =>
+            {
+                e.Cancel = true;
+                cts.Cancel();
+            };
+
+            if (serve)
+            {
+                logger.LogInformation("Starting web host...");
+                // map static files to the output directory
+                await svc.StartServerAsync(host, path, cts.Token);
+            }
             if (watch)
             {
                 logger.LogInformation("Watching for changes. Press Ctrl+C to exit.");
-                using var cts = new CancellationTokenSource();
-                Console.CancelKeyPress += (s, e) =>
-                {
-                    e.Cancel = true;
-                    cts.Cancel();
-                };
+                
                 await svc.WatchAsync(path, cts.Token);
             }
         });

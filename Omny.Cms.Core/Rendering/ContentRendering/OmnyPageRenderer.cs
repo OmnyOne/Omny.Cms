@@ -14,7 +14,8 @@ namespace Omny.Cms.Rendering.ContentRendering;
 public class OmnyPageRenderer(
     IFileSystem fileSystem,
     IContentTypeSerializer serializer,
-    IEnumerable<IPagePlugin> pagePlugins) : IContentTypeRenderer
+    IEnumerable<IPagePlugin> pagePlugins,
+    ITemplatePlugin templatePlugin) : IContentTypeRenderer
 {
     private readonly IEnumerable<IPagePlugin> _pagePlugins = pagePlugins;
 
@@ -137,22 +138,21 @@ public class OmnyPageRenderer(
 
         string menuHtml = BuildMenuHtml(manifest);
 
-        string templateName = manifest.CustomData.TryGetValue("PageTemplate", out var val) ? val?.ToString() ?? "" : "";
-            string templatePath = string.IsNullOrEmpty(templateName)
-                ? Path.Combine("content/template.html")
-                : templateName;
-            if (fileSystem.FileExistsAsync(templatePath).GetAwaiter().GetResult())
-            {
-                var template = fileSystem.ReadAllTextAsync(templatePath).GetAwaiter().GetResult();
-                string renderedTemplate = template
-                    .Replace("{{Body}}", bodyHtml)
-                    .Replace("{{Menu}}", menuHtml)
-                    .Replace("{{Title}}", contentItem.Name);
+        string templatePath = templatePlugin.GetTemplatePath(contentItem, manifest, pagePath);
+        if (fileSystem.FileExistsAsync(templatePath).GetAwaiter().GetResult())
+        {
+            var template = fileSystem.ReadAllTextAsync(templatePath).GetAwaiter().GetResult();
+            string renderedTemplate = template
+                .Replace("{{Body}}", bodyHtml)
+                .Replace("{{Menu}}", menuHtml)
+                .Replace("{{Title}}", contentItem.Name);
 
-            return ApplyPagePlugins(renderedTemplate, contentItem, manifest, pagePath);
-            }
+            string renderedContent = ApplyPagePlugins(renderedTemplate, contentItem, manifest, pagePath);
+            return renderedContent;
+        }
 
-        return ApplyPagePlugins(bodyHtml, contentItem, manifest, pagePath);
+        string renderedBody = ApplyPagePlugins(bodyHtml, contentItem, manifest, pagePath);
+        return renderedBody;
     }
 
     private record CollectionFileList(
