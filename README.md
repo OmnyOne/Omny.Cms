@@ -16,7 +16,7 @@ The field and type system allows significant configuration with just a JSON mani
 
 Plugins can also be made to make it so the editing interface makes it easy to read and write content types for other use cases. Omny has a Hexo plugin for reading and writing blog posts. It uses a separate, appropriate field for each portion of the front matter and of course the primary content. Along with the ability to trigger and monitor builds, this means we can have a non-technical user create and edit blog posts and publish them to a preview site without knowing anything about Hexo. They can also be given the ability to deploy the changes to the live site from a button in the editor if they have permission to merge. 
 
-### Flexibile site building
+### Flexible site building
 
 The editor can be deployed alongside a set of plugins such that each site can use any subset of the plugins and configure them. This still needs some development, but can be used to some degree with APIs, personal access tokens saved into local storage or appsettings.json with some other configuration to control access currently. This will be supplemented by making the ability to deploy from APIs without git backing and use of a GitHub app to support different approaches in the future.
 
