@@ -1,6 +1,6 @@
 # Omny CMS
 
-Omny CMS follows the Omny philosophy "Everything you need, the way you want it.".  There are several different ways you might want to use Omny CMS
+Omny CMS follows the Omny philosophy "Everything you need, the way you want it.".  There are several different ways you might want to use Omny CMS.
 
 ## Use cases
 
